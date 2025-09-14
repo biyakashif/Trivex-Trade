@@ -3,7 +3,7 @@
     <NavLink />
 
     <!-- Main Content -->
-    <div class="min-h-screen bg-gray-100 flex items-center justify-center py-16 relative overflow-hidden">
+    <div class="min-h-screen bg-black flex items-center justify-center py-16 relative overflow-hidden">
         <!-- Background Crypto Icons (Visible in both Desktop and Mobile) -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div class="relative w-full h-full">
@@ -29,7 +29,7 @@
 
             <!-- Right Side: Registration Form -->
             <div class="md:w-1/2 flex items-center justify-center p-6">
-                <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+                <div class="bg-black p-6 rounded-lg shadow-md w-full max-w-md border border-gray-700">
                     <!-- Registration Disabled Message -->
                     <div v-if="isRegistrationDisabled" class="mb-4 text-gray-700 text-center">
                         <p class="text-lg font-semibold">Registration Currently Unavailable</p>
@@ -50,12 +50,12 @@
                     <form @submit.prevent="submit" v-if="!isRegistrationDisabled">
                         <!-- Name -->
                         <div class="mb-4">
-                            <label for="name-desktop" class="block text-gray-700 text-sm font-medium">Name</label>
+                            <label for="name-desktop" class="block text-white text-sm font-medium">Name</label>
                             <input
                                 id="name-desktop"
                                 v-model="form.name"
                                 type="text"
-                                class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                 :class="{ 'border-red-500': form.errors.name }"
                                 required
                                 autofocus
@@ -64,12 +64,12 @@
 
                         <!-- Email Address -->
                         <div class="mb-4">
-                            <label for="email-desktop" class="block text-gray-700 text-sm font-medium">Email</label>
+                            <label for="email-desktop" class="block text-white text-sm font-medium">Email</label>
                             <input
                                 id="email-desktop"
                                 v-model="form.email"
                                 type="email"
-                                class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                 :class="{ 'border-red-500': form.errors.email }"
                                 required
                             />
@@ -77,12 +77,12 @@
 
                         <!-- Password -->
                         <div class="mb-4">
-                            <label for="password-desktop" class="block text-gray-700 text-sm font-medium">Password</label>
+                            <label for="password-desktop" class="block text-white text-sm font-medium">Password</label>
                             <input
                                 id="password-desktop"
                                 v-model="form.password"
                                 type="password"
-                                class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                 :class="{ 'border-red-500': form.errors.password }"
                                 required
                                 autocomplete="new-password"
@@ -91,25 +91,25 @@
 
                         <!-- Confirm Password -->
                         <div class="mb-4">
-                            <label for="password_confirmation-desktop" class="block text-gray-700 text-sm font-medium">Confirm Password</label>
+                            <label for="password_confirmation-desktop" class="block text-white text-sm font-medium">Confirm Password</label>
                             <input
                                 id="password_confirmation-desktop"
                                 v-model="form.password_confirmation"
                                 type="password"
-                                class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                 :class="{ 'border-red-500': form.errors.password_confirmation }"
                                 required
                             />
                         </div>
 
                         <!-- Submit and Login Link -->
-                        <div class="flex justify-between items-center">
-                            <Link href="/login" class="text-sm text-blue-600 hover:underline">
+                        <div class="flex flex-col gap-2 mt-4">
+                            <Link href="/login" class="text-sm text-blue-600 hover:underline self-end mb-2">
                                 Already registered?
                             </Link>
                             <button
                                 type="submit"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                                class="bg-white text-black w-full py-0.5 rounded-full hover:bg-gray-200 disabled:opacity-50 text-base font-semibold shadow-md"
                                 :disabled="form.processing || isRegistrationDisabled"
                             >
                                 Register
@@ -122,7 +122,7 @@
 
         <!-- Mobile View (< 768px) -->
         <div class="md:hidden w-full max-w-md mx-auto p-6 relative z-10">
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="bg-black p-6 rounded-lg shadow-md border border-gray-700">
                 <!-- Registration Disabled Message -->
                 <div v-if="isRegistrationDisabled" class="mb-4 text-gray-700 text-center">
                     <p class="text-lg font-semibold">Registration Currently Unavailable</p>
@@ -143,12 +143,12 @@
                 <form @submit.prevent="submit" v-if="!isRegistrationDisabled">
                     <!-- Name -->
                     <div class="mb-4">
-                        <label for="name-mobile" class="block text-gray-700 text-sm font-medium">Name</label>
+                        <label for="name-mobile" class="block text-white text-sm font-medium">Name</label>
                         <input
                             id="name-mobile"
                             v-model="form.name"
                             type="text"
-                            class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                            class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                             :class="{ 'border-red-500': form.errors.name }"
                             required
                             autofocus
@@ -157,12 +157,12 @@
 
                     <!-- Email Address -->
                     <div class="mb-4">
-                        <label for="email-mobile" class="block text-gray-700 text-sm font-medium">Email</label>
+                        <label for="email-mobile" class="block text-white text-sm font-medium">Email</label>
                         <input
                             id="email-mobile"
                             v-model="form.email"
                             type="email"
-                            class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                            class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                             :class="{ 'border-red-500': form.errors.email }"
                             required
                         />
@@ -170,12 +170,12 @@
 
                     <!-- Password -->
                     <div class="mb-4">
-                        <label for="password-mobile" class="block text-gray-700 text-sm font-medium">Password</label>
+                        <label for="password-mobile" class="block text-white text-sm font-medium">Password</label>
                         <input
                             id="password-mobile"
                             v-model="form.password"
                             type="password"
-                            class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                            class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                             :class="{ 'border-red-500': form.errors.password }"
                             required
                             autocomplete="new-password"
@@ -184,25 +184,25 @@
 
                     <!-- Confirm Password -->
                     <div class="mb-4">
-                        <label for="password_confirmation-mobile" class="block text-gray-700 text-sm font-medium">Confirm Password</label>
+                        <label for="password_confirmation-mobile" class="block text-white text-sm font-medium">Confirm Password</label>
                         <input
                             id="password_confirmation-mobile"
                             v-model="form.password_confirmation"
                             type="password"
-                            class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                            class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                             :class="{ 'border-red-500': form.errors.password_confirmation }"
                             required
                         />
                     </div>
 
                     <!-- Submit and Login Link -->
-                    <div class="flex justify-between items-center">
-                        <Link href="/login" class="text-sm text-blue-600 hover:underline">
+                    <div class="flex flex-col gap-2 mt-4">
+                        <Link href="/login" class="text-sm text-blue-600 hover:underline self-end mb-2">
                             Already registered?
                         </Link>
                         <button
                             type="submit"
-                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                            class="bg-white text-black w-full py-0.5 rounded-full hover:bg-gray-200 disabled:opacity-50 text-base font-semibold shadow-md"
                             :disabled="form.processing || isRegistrationDisabled"
                         >
                             Register

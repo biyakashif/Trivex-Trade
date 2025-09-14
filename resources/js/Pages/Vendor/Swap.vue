@@ -146,18 +146,20 @@ const performSwap = async () => {
   <Head title="Swap" />
   <AuthenticatedLayout>
     <template #header>
-      <h1 class="text-2xl font-bold text-white">Swap Cryptocurrencies</h1>
     </template>
 
     <div class="py-6 bg-black min-h-screen">
-      <div class="max-w-md mx-auto sm:px-6 lg:px-8">
+      <div class="max-w-lg lg:max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
         <div class="bg-black overflow-hidden rounded-xl shadow-lg p-6 border border-gray-800">
           <!-- Swap Form -->
           <div class="space-y-4">
+             <h1 class="text-2xl font-bold text-white">Swap Cryptocurrencies</h1>
             <!-- From Crypto -->
             <div>
               <label class="block text-sm font-medium text-white mb-1">From</label>
-              <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-2 sm:space-y-0">
+              
+              <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-2 space-y-2 lg:space-y-0">
                 <select
                   v-model="fromCrypto"
                   @change="updateToAmount"
@@ -167,7 +169,7 @@ const performSwap = async () => {
                     {{ crypto.symbol.toUpperCase() }}
                   </option>
                 </select>
-                <div class="flex w-full sm:w-auto space-x-2">
+                <div class="flex w-full lg:w-auto space-x-2">
                   <input
                     v-model="fromAmount"
                     @input="updateToAmount"
@@ -204,7 +206,7 @@ const performSwap = async () => {
             <!-- To Crypto -->
             <div>
               <label class="block text-sm font-medium text-white mb-1">To</label>
-              <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-2 sm:space-y-0">
+              <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-2 space-y-2 lg:space-y-0">
                 <select
                   v-model="toCrypto"
                   @change="updateToAmount"

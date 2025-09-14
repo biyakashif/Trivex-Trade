@@ -100,7 +100,7 @@ const fetchTradeHistory = async () => {
   <Head title="Account" />
   <AuthenticatedLayout>
     <template #header>
-      <h1 class="text-xl font-bold">Account</h1>
+      <h1 class="text-xl font-bold text-white text-center pt-4">Account</h1>
     </template>
 
     <div class="py-6 bg-black min-h-screen">

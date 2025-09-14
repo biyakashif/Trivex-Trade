@@ -1,11 +1,11 @@
 <template>
     <div class="min-h-screen bg-black text-white">
         <div>
-            <Header :auth="true" />
+            <slot name="header" />
         </div>
         <Hamburger :sidebarOpen="sidebarOpen" @toggle-sidebar="sidebarOpen = !sidebarOpen" />
         <Sidebar :sidebarOpen="sidebarOpen" :user="$page.props.auth.user" />
-        <main :class="['transition-all', sidebarOpen ? 'lg:ml-[250px]' : 'lg:ml-0', 'pt-[50px] sm:pt-[80px] pb-16 lg:pb-0']">
+        <main :class="['transition-all', sidebarOpen ? 'lg:ml-[250px]' : 'lg:ml-0', 'pt-[50px] pb-16 lg:pb-0']">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                 <slot />
             </div>
@@ -19,7 +19,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 
-import Header from '@/Components/Header.vue';
+
 import Sidebar from '@/Components/Sidebar.vue';
 import Hamburger from '@/Components/Hamburger.vue';
 import FloatingChat from '@/Components/FloatingChat.vue';

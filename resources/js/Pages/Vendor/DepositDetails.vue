@@ -107,7 +107,7 @@ const submitDeposit = () => {
   <Head :title="`${symbol.toUpperCase()}`" />
   <AuthenticatedLayout>
     <div class="py-4 bg-black min-h-screen">
-      <div class="max-w-xs mx-auto px-2">
+      <div class="max-w-md lg:max-w-4xl mx-auto px-4 lg:px-6">
         <div class="bg-black overflow-hidden shadow-lg rounded-lg p-3 space-y-3 border border-gray-800">
           <div class="flex justify-between items-center">
             <div class="flex items-center">
@@ -233,7 +233,7 @@ const submitDeposit = () => {
           <button
             @click="submitDeposit"
             :disabled="form.processing"
-            class="w-full px-2 py-1 bg-black text-white rounded-md text-[10px] hover:bg-gray-900 border border-gray-700"
+            class="w-full px-2 py-1 bg-white text-black rounded-md text-[10px] font-normal hover:bg-gray-100"
           >
             Deposit
           </button>

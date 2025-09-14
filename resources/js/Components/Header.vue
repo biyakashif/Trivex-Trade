@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-black fixed top-0 left-0 w-full min-h-[50px] sm:min-h-[80px] shadow flex items-center justify-center z-[102] px-6 border-b border-gray-800">
+  <header class="bg-black fixed top-0 left-0 w-full min-h-[50px] shadow flex items-center justify-center z-[102] px-6 border-b border-gray-800">
     <!-- SVG with dark theme color -->
     <svg class="absolute top-0 left-0 w-full h-full opacity-10 z-0 fill-current text-gray-700" viewBox="0 0 1440 120" preserveAspectRatio="none">
       <path

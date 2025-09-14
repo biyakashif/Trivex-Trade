@@ -4,6 +4,7 @@ import { Head, router, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useCryptoStore } from '@/Store/crypto.js';
 import Chart from 'chart.js/auto';
+import Header from '@/Components/Header.vue';
 
 // Crypto store for managing selected currency
 const cryptoStore = useCryptoStore();
@@ -257,7 +258,9 @@ onUnmounted(() => {
   <Head title="Dashboard" />
 
   <AuthenticatedLayout>
-    <template #header></template>
+    <template #header>
+      <Header :auth="true" />
+    </template>
 
     <div class="bg-black text-white min-h-screen">
       <!-- Flash Messages -->

@@ -1,10 +1,10 @@
 <template>
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen bg-black">
         <!-- Navbar -->
         <NavLink />
 
         <!-- Main Content -->
-        <div class="min-h-screen bg-gray-100 flex items-center justify-center py-16 relative overflow-hidden">
+    <div class="min-h-screen bg-black flex items-center justify-center py-16 relative overflow-hidden">
             <!-- Background Crypto Icons -->
             <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div class="relative w-full h-full">
@@ -27,7 +27,7 @@
             <div class="hidden md:flex w-full max-w-5xl mx-auto relative z-10">
                 <div class="md:w-1/2 p-6"></div>
                 <div class="md:w-1/2 flex items-center justify-center p-6">
-                    <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+                    <div class="bg-black p-6 rounded-lg shadow-md w-full max-w-md border border-gray-700">
                         <div class="flex justify-center mb-6">
                             <ApplicationLogo class="h-12" />
                         </div>
@@ -40,12 +40,12 @@
                         <form @submit.prevent="submit">
                             <input type="hidden" v-model="form.token" />
                             <div class="mb-4">
-                                <label for="email" class="block text-gray-700 text-sm font-medium">Email</label>
+                                <label for="email" class="block text-white text-sm font-medium">Email</label>
                                 <input
                                     id="email"
                                     v-model="form.email"
                                     type="email"
-                                    class="mt-1 w-full p-2 border rounded-md bg-gray-100"
+                                    class="mt-1 w-full p-2 border border-gray-700 rounded-md bg-black text-white placeholder-gray-500"
                                     :class="{ 'border-red-500': form.errors.email }"
                                     required
                                     autofocus
@@ -53,31 +53,31 @@
                                 />
                             </div>
                             <div class="mb-4">
-                                <label for="password" class="block text-gray-700 text-sm font-medium">Password</label>
+                                <label for="password" class="block text-white text-sm font-medium">Password</label>
                                 <input
                                     id="password"
                                     v-model="form.password"
                                     type="password"
-                                    class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                    class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                     :class="{ 'border-red-500': form.errors.password }"
                                     required
                                 />
                             </div>
                             <div class="mb-4">
-                                <label for="password_confirmation" class="block text-gray-700 text-sm font-medium">Confirm Password</label>
+                                <label for="password_confirmation" class="block text-white text-sm font-medium">Confirm Password</label>
                                 <input
                                     id="password_confirmation"
                                     v-model="form.password_confirmation"
                                     type="password"
-                                    class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                    class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                     :class="{ 'border-red-500': form.errors.password_confirmation }"
                                     required
                                 />
                             </div>
-                            <div class="flex justify-end">
+                            <div class="flex justify-center">
                                 <button
                                     type="submit"
-                                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                                    class="bg-white text-black w-full py-0.5 rounded-full hover:bg-gray-200 disabled:opacity-50 text-base font-semibold shadow-md"
                                     :disabled="form.processing"
                                 >
                                     Reset Password
@@ -90,7 +90,7 @@
 
             <!-- Mobile View (< 768px) -->
             <div class="md:hidden w-full max-w-md mx-auto p-6 relative z-10">
-                <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="bg-black p-6 rounded-lg shadow-md border border-gray-700">
                     <div class="flex justify-center mb-6">
                         <ApplicationLogo class="h-12" />
                     </div>
@@ -103,12 +103,12 @@
                     <form @submit.prevent="submit">
                         <input type="hidden" v-model="form.token" />
                         <div class="mb-4">
-                            <label for="email" class="block text-gray-700 text-sm font-medium">Email</label>
+                            <label for="email" class="block text-white text-sm font-medium">Email</label>
                             <input
                                 id="email"
                                 v-model="form.email"
                                 type="email"
-                                class="mt-1 w-full p-2 border rounded-md bg-gray-100"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md bg-black text-white placeholder-gray-500"
                                 :class="{ 'border-red-500': form.errors.email }"
                                 required
                                 autofocus
@@ -116,31 +116,31 @@
                             />
                         </div>
                         <div class="mb-4">
-                            <label for="password" class="block text-gray-700 text-sm font-medium">Password</label>
+                            <label for="password" class="block text-white text-sm font-medium">Password</label>
                             <input
                                 id="password"
                                 v-model="form.password"
                                 type="password"
-                                class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                 :class="{ 'border-red-500': form.errors.password }"
                                 required
                             />
                         </div>
                         <div class="mb-4">
-                            <label for="password_confirmation" class="block text-gray-700 text-sm font-medium">Confirm Password</label>
+                            <label for="password_confirmation" class="block text-white text-sm font-medium">Confirm Password</label>
                             <input
                                 id="password_confirmation"
                                 v-model="form.password_confirmation"
                                 type="password"
-                                class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                 :class="{ 'border-red-500': form.errors.password_confirmation }"
                                 required
                             />
                         </div>
-                        <div class="flex justify-end">
+                        <div class="flex justify-center">
                             <button
                                 type="submit"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                                class="bg-white text-black w-full py-0.5 rounded-full hover:bg-gray-200 disabled:opacity-50 text-base font-semibold shadow-md"
                                 :disabled="form.processing"
                             >
                                 Reset Password

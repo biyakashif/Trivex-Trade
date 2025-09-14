@@ -62,7 +62,7 @@ const copyHistoryToClipboard = () => {
   <Head title="Withdraw" />
   <AuthenticatedLayout>
     <template #header>
-      <h1 class="text-2xl font-bold text-white">Withdraw</h1>
+      <h1 class="text-2xl py-3 font-bold text-white text-center">Withdraw</h1>
     </template>
 
     <div class="bg-black flex flex-col sm:min-h-screen h-[calc(100vh-4rem)] sm:h-auto">
@@ -117,7 +117,7 @@ const copyHistoryToClipboard = () => {
         <!-- Crypto Withdrawal Form -->
         <div
           v-if="activeTab === 'crypto'"
-          class="bg-black rounded-xl shadow-md p-6 w-full max-w-md border border-gray-800"
+          class="bg-black rounded-xl shadow-md p-6 w-full max-w-md lg:max-w-4xl border border-gray-800"
         >
           <h2 class="text-xl font-bold text-white mb-6 text-center">Crypto Withdrawal</h2>
           <form @submit.prevent="router.post(route('withdraw.store'), $event.target, { preserveState: true })">
@@ -178,7 +178,7 @@ const copyHistoryToClipboard = () => {
         <!-- Bank Withdrawal Form -->
         <div
           v-if="activeTab === 'bank'"
-          class="bg-black rounded-xl shadow-md p-6 w-full max-w-md border border-gray-800"
+          class="bg-black rounded-xl shadow-md p-6 w-full max-w-md lg:max-w-4xl border border-gray-800"
         >
           <h2 class="text-xl font-bold text-white mb-6 text-center">Bank Withdrawal</h2>
           <form @submit.prevent="router.post(route('withdraw.store'), $event.target, { preserveState: true })">
@@ -245,7 +245,7 @@ const copyHistoryToClipboard = () => {
         </div>
 
         <!-- History Display -->
-<div v-if="activeTab === 'history'" class="w-full max-w-md p-4 space-y-4 pb-20 md:pb-4">
+<div v-if="activeTab === 'history'" class="w-full max-w-md lg:max-w-4xl p-4 space-y-4 pb-20 md:pb-4">
   <div v-if="withdrawals.length === 0" class="text-gray-300 text-sm text-center py-4">
     No withdrawal history available.
   </div>
