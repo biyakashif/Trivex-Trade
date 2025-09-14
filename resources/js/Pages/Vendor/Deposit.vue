@@ -47,7 +47,7 @@ const goToWithdraw = () => {
   <Head title="Deposit" />
   <AuthenticatedLayout>
     <template #header>
-      <h1 class="text-2xl font-bold text-white">Deposit</h1>
+      <!-- <h1 class="text-2xl font-bold text-white">Deposit</h1> -->
     </template>
 
     <div class="py-4 bg-black min-h-screen">

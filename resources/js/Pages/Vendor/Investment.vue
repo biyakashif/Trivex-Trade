@@ -110,9 +110,9 @@ onMounted(() => {
 
   <AuthenticatedLayout>
     <template #header>
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center justify-center space-x-2 pt-4">
         <ArrowUpIcon class="h-6 w-6 text-green-400" />
-        <h2 class="font-semibold text-xl text-white leading-tight sm:text-2xl">
+        <h2 class="text-2xl py-3 font-bold text-white">
           Grow Your Investment
         </h2>
       </div>
@@ -165,7 +165,7 @@ onMounted(() => {
         <!-- Start Investment Button -->
         <button
           @click="showForm = true"
-          class="w-full bg-black text-white font-semibold py-3 rounded-lg shadow-md hover:bg-gray-900 transition duration-300 mb-6 sm:py-2 sm:text-sm border border-gray-700"
+          class="w-full bg-white text-black font-normal py-1 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 mb-6 sm:py-0.5 sm:text-sm border border-gray-300"
         >
           Start New Investment
         </button>
@@ -210,13 +210,13 @@ onMounted(() => {
             <button
               @click="startInvestment"
               :disabled="!selectedPlan || !investmentAmount"
-              class="w-full bg-black text-white font-semibold py-2 sm:py-3 rounded-lg shadow-md hover:bg-gray-900 transition duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed text-sm border border-gray-700"
+              class="w-full bg-white text-black font-normal py-1 sm:py-0.5 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm border border-gray-300"
             >
               Confirm
             </button>
             <button
               @click="showForm = false; selectedPlan = null; investmentAmount = '';"
-              class="w-full bg-black text-white font-semibold py-2 sm:py-3 rounded-lg shadow-md hover:bg-gray-900 transition duration-300 text-sm border border-gray-700"
+              class="w-full bg-white text-black font-normal py-1 sm:py-0.5 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 text-sm border border-gray-300"
             >
               Cancel
             </button>

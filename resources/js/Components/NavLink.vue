@@ -29,8 +29,8 @@ const navItems = [
 </script>
 
 <template>
-  <nav class="fixed top-0 w-full bg-gray-200 text-gray-900 z-50">
-    <div class="container mx-auto px-4 py-4 flex items-center justify-between flex-wrap">
+  <nav class="fixed top-0 w-full bg-black text-white z-50 border-b border-gray-700">
+  <div class="container mx-auto px-4 py-4 flex items-center justify-between flex-wrap">
       <!-- Logo -->
       <Link :href="route('welcome')" class="block py-2 px-4">
         <ApplicationLogo class="h-8 w-auto" />
@@ -39,26 +39,26 @@ const navItems = [
       <!-- Crypto Stats (Desktop) -->
       <ul class="hidden lg:flex space-x-6">
         <li class="text-center">
-          <span class="block text-xs">Last Price</span>
-          <span class="text-sm">${{ cryptoStore.getPrice('btc') || 'Loading...' }}</span>
+          <span class="block text-xs text-gray-400">Last Price</span>
+          <span class="text-sm text-blue-400">${{ cryptoStore.getPrice('btc') || 'Loading...' }}</span>
         </li>
         <li class="text-center">
-          <span class="block text-xs">24H Change</span>
-          <span class="text-sm">{{ cryptoStore.getChange('btc') || 'Loading...' }}%</span>
+          <span class="block text-xs text-gray-400">24H Change</span>
+          <span class="text-sm" :class="cryptoStore.getChange('btc') >= 0 ? 'text-green-400' : 'text-red-400'">{{ cryptoStore.getChange('btc') || 'Loading...' }}%</span>
         </li>
         <li class="text-center">
-          <span class="block text-xs">24H Vol</span>
-          <span class="text-sm">${{ cryptoStore.getVolume('btc') || 'Loading...' }}</span>
+          <span class="block text-xs text-gray-400">24H Vol</span>
+          <span class="text-sm text-blue-400">${{ cryptoStore.getVolume('btc') || 'Loading...' }}</span>
         </li>
         <li class="text-center">
-          <span class="block text-xs">Live Price</span>
-          <span class="text-sm">${{ cryptoStore.getPrice('btc') || 'Loading...' }}</span>
+          <span class="block text-xs text-gray-400">Live Price</span>
+          <span class="text-sm text-blue-400">${{ cryptoStore.getPrice('btc') || 'Loading...' }}</span>
         </li>
       </ul>
 
       <!-- Mobile Menu Button -->
       <button
-        class="lg:hidden p-2 focus:outline-none"
+        class="lg:hidden p-2 focus:outline-none text-white"
         @click="navbarOpen = !navbarOpen"
         aria-label="Toggle navigation"
       >
@@ -72,28 +72,28 @@ const navItems = [
       <div :class="['lg:flex lg:items-center', navbarOpen ? 'block' : 'hidden']" class="w-full lg:w-auto">
         <ul class="lg:flex lg:space-x-6 mt-4 lg:mt-0">
           <li v-for="item in navItems" :key="item.name">
-            <a :href="item.href" class="block py-2 px-4 hover:text-blue-400">{{ item.name }}</a>
+            <a :href="item.href" class="block py-2 px-4 text-white hover:text-blue-400">{{ item.name }}</a>
           </li>
         </ul>
         <div class="flex space-x-4 mt-4 lg:mt-0 lg:ml-6">
           <Link
             v-if="!user"
             :href="route('login')"
-            class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700 flex items-center"
+            class="bg-white text-black px-4 py-1 rounded hover:bg-gray-200 flex items-center text-base font-semibold"
           >
             <i class="fas fa-user mr-1"></i> Sign In
           </Link>
           <Link
             v-if="!user && !isRegistrationDisabled"
             :href="route('register')"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center"
+            class="bg-white text-black px-4 py-1 rounded hover:bg-gray-200 flex items-center text-base font-semibold"
           >
             <i class="fas fa-user-plus mr-1"></i> Register
           </Link>
           <Link
             v-if="user"
             :href="route('dashboard')"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center"
+            class="bg-white text-black px-4 py-1 rounded hover:bg-gray-200 flex items-center text-base font-semibold"
           >
             Dashboard
           </Link>

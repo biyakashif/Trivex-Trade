@@ -3,7 +3,7 @@
     <NavLink />
 
     <!-- Main Content -->
-    <div class="min-h-screen bg-gray-100 flex items-center justify-center py-16 relative overflow-hidden">
+    <div class="min-h-screen bg-black flex items-center justify-center py-16 relative overflow-hidden">
         <!-- Background Crypto Icons (Visible in both Desktop and Mobile) -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div class="relative w-full h-full">
@@ -29,9 +29,9 @@
 
             <!-- Right Side: Forgot Password Form -->
             <div class="md:w-1/2 flex items-center justify-center p-6">
-                <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+                <div class="bg-black p-6 rounded-lg shadow-md w-full max-w-md border border-gray-700">
                     <!-- Instruction Text -->
-                    <div class="mb-4 text-sm text-gray-600 text-center">
+                    <div class="mb-4 text-sm text-gray-300 text-center">
                         Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.
                     </div>
 
@@ -49,12 +49,12 @@
                     <form @submit.prevent="submit">
                         <!-- Email Address -->
                         <div class="mb-4">
-                            <label for="email" class="block text-gray-700 text-sm font-medium">Email</label>
+                            <label for="email" class="block text-white text-sm font-medium">Email</label>
                             <input
                                 id="email"
                                 v-model="form.email"
                                 type="email"
-                                class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                 :class="{ 'border-red-500': form.errors.email }"
                                 required
                                 autofocus
@@ -65,7 +65,7 @@
                         <div class="flex justify-center">
                             <button
                                 type="submit"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                                class="bg-white text-black w-full py-0.5 rounded-full hover:bg-gray-200 disabled:opacity-50 text-base font-semibold shadow-md"
                                 :disabled="form.processing"
                             >
                                 Email Password Reset Link
@@ -78,9 +78,9 @@
 
         <!-- Mobile View (< 768px) -->
         <div class="md:hidden w-full max-w-md mx-auto p-6 relative z-10">
-            <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="bg-black p-6 rounded-lg shadow-md border border-gray-700">
                 <!-- Instruction Text -->
-                <div class="mb-4 text-sm text-gray-600 text-center">
+                <div class="mb-4 text-sm text-gray-300 text-center">
                     Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.
                 </div>
 
@@ -98,12 +98,12 @@
                 <form @submit.prevent="submit">
                     <!-- Email Address -->
                     <div class="mb-4">
-                        <label for="email" class="block text-gray-700 text-sm font-medium">Email</label>
+                        <label for="email" class="block text-white text-sm font-medium">Email</label>
                         <input
                             id="email"
                             v-model="form.email"
                             type="email"
-                            class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                            class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                             :class="{ 'border-red-500': form.errors.email }"
                             required
                             autofocus
@@ -114,7 +114,7 @@
                     <div class="flex justify-center">
                         <button
                             type="submit"
-                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                            class="bg-white text-black w-full py-0.5 rounded-full hover:bg-gray-200 disabled:opacity-50 text-base font-semibold shadow-md"
                             :disabled="form.processing"
                         >
                             Email Password Reset Link

@@ -1,70 +1,10 @@
-<!-- <script setup>
-import { computed } from 'vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
 
-const props = defineProps({
-    status: {
-        type: String,
-    },
-});
-
-const form = useForm({});
-
-const submit = () => {
-    form.post(route('verification.send'));
-};
-
-const verificationLinkSent = computed(
-    () => props.status === 'verification-link-sent',
-);
-</script>
-
-<template>
-    <GuestLayout>
-        <Head title="Email Verification" />
-
-        <div class="mb-4 text-sm text-gray-600">
-            Thanks for signing up! Before getting started, could you verify your
-            email address by clicking on the link we just emailed to you? If you
-            didn't receive the email, we will gladly send you another.
-        </div>
-
-        <div
-            class="mb-4 text-sm font-medium text-green-600"
-            v-if="verificationLinkSent"
-        >
-            A new verification link has been sent to the email address you
-            provided during registration.
-        </div>
-
-        <form @submit.prevent="submit">
-            <div class="mt-4 flex items-center justify-between">
-                <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Resend Verification Email
-                </PrimaryButton>
-
-                <Link
-                    :href="route('logout')"
-                    method="post"
-                    as="button"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >Log Out</Link
-                >
-            </div>
-        </form>
-    </GuestLayout>
-</template> -->
 <template>
     <!-- Navbar -->
     <NavLink />
 
     <!-- Main Content -->
-    <div class="min-h-screen bg-gray-100 flex items-center justify-center py-16 relative overflow-hidden">
+    <div class="min-h-screen bg-black flex items-center justify-center py-16 relative overflow-hidden">
         <!-- Background Crypto Icons (Visible in both Desktop and Mobile) -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div class="relative w-full h-full">
@@ -90,9 +30,9 @@ const verificationLinkSent = computed(
 
             <!-- Right Side: Verification Form -->
             <div class="md:w-1/2 flex items-center justify-center p-6">
-                <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+                <div class="bg-black p-6 rounded-lg shadow-md w-full max-w-md border border-gray-700">
                     <!-- Instruction Text -->
-                    <div class="mb-4 text-sm text-gray-600 text-center">
+                    <div class="mb-4 text-sm text-gray-300 text-center">
                         Thanks for signing up! We have sent a 6-digit verification code to your email. Please enter the code below to verify your email address.
                     </div>
 
@@ -110,12 +50,12 @@ const verificationLinkSent = computed(
                     <form @submit.prevent="verifyCode">
                         <!-- Code -->
                         <div class="mb-4">
-                            <label for="code-desktop" class="block text-gray-700 text-sm font-medium">Verification Code</label>
+                            <label for="code-desktop" class="block text-white text-sm font-medium">Verification Code</label>
                             <input
                                 id="code-desktop"
                                 v-model="verifyForm.code"
                                 type="text"
-                                class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                                 :class="{ 'border-red-500': verifyForm.errors.code }"
                                 required
                                 autofocus
@@ -125,43 +65,45 @@ const verificationLinkSent = computed(
                         </div>
 
                         <!-- Submit, Resend, and Logout -->
-                        <div class="flex justify-between items-center">
+                        <div class="flex flex-col gap-2 mt-4">
                             <button
                                 type="submit"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                                class="bg-white text-black w-full py-0.5 rounded-full hover:bg-gray-200 disabled:opacity-50 text-base font-semibold shadow-md"
                                 :disabled="verifyForm.processing"
                             >
                                 Verify Code
                             </button>
-
-                            <form @submit.prevent="resendEmail">
-                                <button
-                                    type="submit"
-                                    class="text-blue-600 hover:underline text-sm"
-                                    :disabled="resendForm.processing"
-                                >
-                                    Resend Code
-                                </button>
-                            </form>
-
-                            <form @submit.prevent="logout">
-                                <button
-                                    type="submit"
-                                    class="text-blue-600 hover:underline text-sm"
-                                    :disabled="logoutForm.processing"
-                                >
-                                    Log Out
-                                </button>
-                            </form>
+                            <div class="flex justify-between mt-2">
+                                <form @submit.prevent="resendEmail">
+                                    <button
+                                        type="submit"
+                                        class="text-blue-600 hover:underline text-sm"
+                                        :disabled="resendForm.processing"
+                                    >
+                                        Resend Code
+                                    </button>
+                                </form>
+                                <form @submit.prevent="logout">
+                                    <button
+                                        type="submit"
+                                        class="text-blue-600 hover:underline text-sm"
+                                        :disabled="logoutForm.processing"
+                                    >
+                                        Log Out
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+        </div>
 
         <!-- Mobile View (< 768px) -->
         <div class="md:hidden w-full max-w-md mx-auto p-6 relative z-10">
             <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="bg-black p-6 rounded-lg shadow-md border border-gray-700">
                 <!-- Instruction Text -->
                 <div class="mb-4 text-sm text-gray-600 text-center">
                     Thanks for signing up! We have sent a 6-digit verification code to your email. Please enter the code below to verify your email address.
@@ -186,7 +128,7 @@ const verificationLinkSent = computed(
                             id="code-mobile"
                             v-model="verifyForm.code"
                             type="text"
-                            class="mt-1 w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+                                class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
                             :class="{ 'border-red-500': verifyForm.errors.code }"
                             required
                             autofocus
@@ -199,7 +141,7 @@ const verificationLinkSent = computed(
                     <div class="flex justify-between items-center">
                         <button
                             type="submit"
-                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                                class="bg-white text-black w-full py-0.5 rounded-full hover:bg-gray-200 disabled:opacity-50 text-base font-semibold shadow-md"
                             :disabled="verifyForm.processing"
                         >
                             Verify Code

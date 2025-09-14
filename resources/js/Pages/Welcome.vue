@@ -77,23 +77,23 @@ onUnmounted(() => {
 
 <template>
   <Head title="Welcome" />
-  <div v-if="$page.props.errors.error" class="mb-4 text-red-500 text-center font-semibold">
+  <div v-if="$page.props.errors.error" class="mb-4 text-red-400 text-center font-semibold">
     {{ $page.props.errors.error }}
   </div>
 
   <!-- Modal -->
-  <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-8 rounded-xl max-w-md w-full text-center">
-      <h3 class="text-2xl font-bold text-gray-900 mb-4">Coming Soon!</h3>
-      <p class="text-gray-600 mb-6">Our mobile app will be available soon on iOS and Android.</p>
-      <button id="closeModal" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300">
+  <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+    <div class="bg-black p-8 rounded-xl max-w-md w-full text-center border border-gray-700">
+      <h3 class="text-2xl font-bold text-white mb-4">Coming Soon!</h3>
+      <p class="text-gray-300 mb-6">Our mobile app will be available soon on iOS and Android.</p>
+      <button id="closeModal" class="bg-white text-black px-4 py-1 rounded-lg hover:bg-gray-200 transition-all duration-300 font-normal">
         Close
       </button>
     </div>
   </div>
 
   <!-- Mobile View (< 768px) -->
-  <div class="md:hidden min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+  <div class="md:hidden min-h-screen bg-black flex flex-col items-center justify-center p-6">
     <!-- Logo -->
     <div class="mb-8">
       <Link :href="route('welcome')">
@@ -102,7 +102,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Title -->
-    <h1 class="text-3xl font-extrabold text-gray-900 text-center mb-6 leading-tight">
+    <h1 class="text-3xl font-extrabold text-white text-center mb-6 leading-tight">
       Trade Crypto with Speed, Security, and Confidence
     </h1>
 
@@ -123,7 +123,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Registration Disabled Message -->
-    <div v-if="isRegistrationDisabled" class="mb-6 text-red-500 text-center max-w-sm">
+    <div v-if="isRegistrationDisabled" class="mb-6 text-red-400 text-center max-w-sm">
       <p class="text-lg font-medium">
         New user registration is currently disabled due to high traffic or maintenance.
       </p>
@@ -133,14 +133,14 @@ onUnmounted(() => {
     <div class="flex flex-col space-y-4 w-full max-w-xs">
       <Link
         :href="route('login')"
-        class="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-gray-700 flex items-center justify-center text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+        class="bg-white text-black px-4 py-1 rounded-lg hover:bg-gray-200 flex items-center justify-center text-base font-normal transition-all duration-300 shadow-md hover:shadow-lg"
       >
         <i class="fas fa-user mr-2"></i> Sign In
       </Link>
       <Link
         v-if="!isRegistrationDisabled"
         :href="route('register')"
-        class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center justify-center text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+        class="bg-white text-black px-4 py-1 rounded-lg hover:bg-gray-200 flex items-center justify-center text-base font-normal transition-all duration-300 shadow-md hover:shadow-lg"
       >
         <i class="fas fa-user-plus mr-2"></i> Register
       </Link>
@@ -148,29 +148,29 @@ onUnmounted(() => {
   </div>
 
   <!-- Desktop View (≥ 768px) -->
-  <div class="hidden md:block bg-gray-50">
+  <div class="hidden md:block bg-black">
     <!-- Navbar -->
     <NavLink :is-registration-disabled="isRegistrationDisabled" />
 
     <!-- Main Content -->
     <main :class="['pt-20 transition-all', sidebarOpen ? 'ml-[250px]' : 'ml-0']">
       <!-- Hero Section (Title and Register Form) -->
-      <section class="bg-navy-900 py-16 px-6 md:px-12">
+      <section class="bg-black py-16 px-6 md:px-12">
         <div class="container mx-auto relative z-10">
-          <div class="bg-white bg-opacity-95 backdrop-blur-lg rounded-2xl shadow-xl p-10 md:p-12 max-w-6xl mx-auto">
+          <div class="bg-black bg-opacity-95 backdrop-blur-lg rounded-2xl shadow-xl p-10 md:p-12 max-w-6xl mx-auto border border-gray-700">
             <div class="flex flex-col md:flex-row items-center gap-8">
               <!-- Left: Main Title -->
               <div class="md:w-1/2 flex flex-col justify-center items-start text-left">
-                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
                   Trade Crypto with Speed, Security, and Confidence
                 </h1>
-                <p class="text-lg text-gray-600 mb-6">
+                <p class="text-lg text-gray-300 mb-6">
                   Join a platform designed for seamless and secure cryptocurrency trading.
                 </p>
               </div>
               <!-- Right: Subtitle, Email Input, and Register Button -->
               <div class="md:w-1/2 flex flex-col justify-center items-end text-right">
-                <p class="text-xl text-gray-700 mb-6 font-medium">
+                <p class="text-xl text-gray-200 mb-6 font-medium">
                   Start trading today with just a few clicks.
                 </p>
                 <div class="flex flex-col md:flex-row max-w-md w-full gap-4 md:gap-0">
@@ -178,18 +178,18 @@ onUnmounted(() => {
                     type="email"
                     placeholder="Enter your email"
                     required
-                    class="flex-1 px-6 py-3 rounded-lg md:rounded-r-none border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent shadow-sm text-lg transition-all duration-300"
+                    class="flex-1 px-6 py-3 rounded-lg md:rounded-r-none border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm text-lg transition-all duration-300 bg-black text-white placeholder-gray-500"
                   />
                   <Link
                     v-if="!isRegistrationDisabled"
                     :href="route('register')"
-                    class="bg-blue-600 text-white px-8 py-3 rounded-lg md:rounded-l-none hover:bg-blue-700 text-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+                    class="bg-white text-black px-6 py-1 rounded-lg md:rounded-l-none hover:bg-gray-200 text-base font-normal transition-all duration-300 shadow-md hover:shadow-lg"
                   >
-                    Register Now
+                Register Now
                   </Link>
                 </div>
                 <!-- Registration Disabled Message -->
-                <div v-if="isRegistrationDisabled" class="mt-4 text-red-500 text-right">
+                <div v-if="isRegistrationDisabled" class="mt-4 text-red-400 text-right">
                   <p class="text-lg font-medium">
                     New user registration is currently disabled due to high traffic or maintenance.
                   </p>
@@ -201,7 +201,7 @@ onUnmounted(() => {
       </section>
 
       <!-- Welcome Section -->
-      <section class="py-16 px-6 md:px-12 bg-white relative">
+      <section class="py-16 px-6 md:px-12 bg-black relative">
         <!-- Scattered Crypto Icons -->
         <div class="absolute inset-0 z-0 overflow-hidden">
           <div
@@ -227,21 +227,21 @@ onUnmounted(() => {
           <div class="flex flex-col md:flex-row items-center gap-12">
             <!-- Left: App Download Section -->
             <div class="md:w-1/3 md:h-[650px] flex flex-col justify-center items-center text-center">
-              <h2 class="text-3xl font-bold text-gray-900 mb-4">Trade Anywhere with Our Mobile App</h2>
-              <p class="text-lg text-gray-600 mb-6">Available soon on iOS and Android</p>
+              <h2 class="text-3xl font-bold text-white mb-4">Trade Anywhere with Our Mobile App</h2>
+              <p class="text-lg text-gray-300 mb-6">Available soon on iOS and Android</p>
               <div class="flex flex-col items-center gap-6">
-                <button @click="openModal" class="crypto-icon animation-delay-1">
+                <button @click="openModal" class="crypto-icon animation-delay-1 bg-white text-black px-4 py-1 rounded-lg hover:bg-gray-200 font-normal">
                   <img
                     :src="appleStoreImg"
                     alt="Download on the App Store"
-                    class="h-14 w-auto transition-transform duration-300 hover:scale-105"
+                    class="h-10 w-auto transition-transform duration-300 hover:scale-105"
                   />
                 </button>
-                <button @click="openModal" class="crypto-icon animation-delay-2">
+                <button @click="openModal" class="crypto-icon animation-delay-2 bg-white text-black px-4 py-1 rounded-lg hover:bg-gray-200 font-normal">
                   <img
                     :src="googlePlayImg"
                     alt="Get it on Google Play"
-                    class="h-14 w-auto transition-transform duration-300 hover:scale-105"
+                    class="h-10 w-auto transition-transform duration-300 hover:scale-105"
                   />
                 </button>
               </div>
@@ -264,53 +264,53 @@ onUnmounted(() => {
 
           <!-- Get Started Section -->
           <div class="py-16 text-center">
-            <h2 class="text-4xl font-extrabold text-gray-900 mb-10">Get Started in 3 Simple Steps</h2>
+            <h2 class="text-4xl font-extrabold text-white mb-10">Get Started in 3 Simple Steps</h2>
             <div class="flex flex-col md:flex-row justify-center gap-8">
               <div class="flex-1">
-                <div class="bg-gray-50 p-8 rounded-xl shadow-md flex flex-col items-center h-72 transition-all hover:shadow-xl hover:-translate-y-1">
-                  <div class="text-xl font-bold text-teal-600 mb-2">1</div>
-                  <div class="text-4xl text-teal-600 mb-4 transition-transform duration-300 hover:scale-110">
+                <div class="bg-black p-8 rounded-xl shadow-md flex flex-col items-center h-72 transition-all hover:shadow-xl hover:-translate-y-1 border border-gray-700">
+                  <div class="text-xl font-bold text-blue-400 mb-2">1</div>
+                  <div class="text-4xl text-blue-400 mb-4 transition-transform duration-300 hover:scale-110">
                     <i class="fas fa-user-plus"></i>
                   </div>
-                  <h4 class="text-xl font-semibold text-gray-900 mb-2">Create Account</h4>
-                  <p class="text-gray-600 mb-4 flex-1">Sign up with your email and verify your account.</p>
+                  <h4 class="text-xl font-semibold text-white mb-2">Create Account</h4>
+                  <p class="text-gray-300 mb-4 flex-1">Sign up with your email and verify your account.</p>
                   <Link
                     :href="route('register')"
-                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-lg font-semibold transition-all duration-300"
+                    class="bg-white text-black px-4 py-1 rounded-lg hover:bg-gray-200 text-base font-normal transition-all duration-300"
                   >
-                    Sign Up
+                Sign Up
                   </Link>
                 </div>
               </div>
               <div class="flex-1">
-                <div class="bg-gray-50 p-8 rounded-xl shadow-md flex flex-col items-center h-72 transition-all hover:shadow-xl hover:-translate-y-1">
-                  <div class="text-xl font-bold text-teal-600 mb-2">2</div>
-                  <div class="text-4xl text-teal-600 mb-4 transition-transform duration-300 hover:scale-110">
+                <div class="bg-black p-8 rounded-xl shadow-md flex flex-col items-center h-72 transition-all hover:shadow-xl hover:-translate-y-1 border border-gray-700">
+                  <div class="text-xl font-bold text-blue-400 mb-2">2</div>
+                  <div class="text-4xl text-blue-400 mb-4 transition-transform duration-300 hover:scale-110">
                     <i class="fas fa-wallet"></i>
                   </div>
-                  <h4 class="text-xl font-semibold text-gray-900 mb-2">Make Deposit</h4>
-                  <p class="text-gray-600 mb-4 flex-1">Fund your account securely and quickly.</p>
+                  <h4 class="text-xl font-semibold text-white mb-2">Make Deposit</h4>
+                  <p class="text-gray-300 mb-4 flex-1">Fund your account securely and quickly.</p>
                   <Link
                     href="/deposit"
-                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-lg font-semibold transition-all duration-300"
+                    class="bg-white text-black px-4 py-1 rounded-lg hover:bg-gray-200 text-base font-normal transition-all duration-300"
                   >
-                    Deposit
+                Deposit
                   </Link>
                 </div>
               </div>
               <div class="flex-1">
-                <div class="bg-gray-50 p-8 rounded-xl shadow-md flex flex-col items-center h-72 transition-all hover:shadow-xl hover:-translate-y-1">
-                  <div class="text-xl font-bold text-teal-600 mb-2">3</div>
-                  <div class="text-4xl text-teal-600 mb-4 transition-transform duration-300 hover:scale-110">
+                <div class="bg-black p-8 rounded-xl shadow-md flex flex-col items-center h-72 transition-all hover:shadow-xl hover:-translate-y-1 border border-gray-700">
+                  <div class="text-xl font-bold text-blue-400 mb-2">3</div>
+                  <div class="text-4xl text-blue-400 mb-4 transition-transform duration-300 hover:scale-110">
                     <i class="fas fa-chart-line"></i>
                   </div>
-                  <h4 class="text-xl font-semibold text-gray-900 mb-2">Start Trading</h4>
-                  <p class="text-gray-600 mb-4 flex-1">Trade your favorite cryptocurrencies with ease.</p>
+                  <h4 class="text-xl font-semibold text-white mb-2">Start Trading</h4>
+                  <p class="text-gray-300 mb-4 flex-1">Trade your favorite cryptocurrencies with ease.</p>
                   <Link
                     href="/trade"
-                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-lg font-semibold transition-all duration-300"
+                    class="bg-white text-black px-4 py-1 rounded-lg hover:bg-gray-200 text-base font-normal transition-all duration-300"
                   >
-                    Trade
+                Trade
                   </Link>
                 </div>
               </div>
@@ -320,20 +320,20 @@ onUnmounted(() => {
       </section>
 
       <!-- Recent Trading Activities -->
-      <section class="py-16 bg-gray-100 px-6 md:px-12">
+      <section class="py-16 bg-black px-6 md:px-12">
         <div class="container mx-auto">
           <div class="w-full">
             <div class="bg-transparent border-0">
-              <div class="flex flex-wrap justify-between items-center border-b border-gray-300 pb-4 mb-8">
+              <div class="flex flex-wrap justify-between items-center border-b border-gray-700 pb-4 mb-8">
                 <div>
-                  <h4 class="text-3xl font-bold text-gray-900 mb-2">Recent Trading Activities</h4>
-                  <p class="text-gray-600 mb-0">Real-time updates for top cryptocurrencies.</p>
+                  <h4 class="text-3xl font-bold text-white mb-2">Recent Trading Activities</h4>
+                  <p class="text-gray-300 mb-0">Real-time updates for top cryptocurrencies.</p>
                 </div>
               </div>
               <div class="pt-4">
                 <div class="overflow-x-auto rounded-lg shadow-md">
-                  <table class="w-full text-left text-gray-900 bg-white">
-                    <thead class="bg-gray-200 text-gray-700">
+                  <table class="w-full text-left text-white bg-black border border-gray-700">
+                    <thead class="bg-black text-blue-400 border-b border-gray-700">
                       <tr>
                         <th class="p-4">Symbol</th>
                         <th class="p-4">Price</th>
@@ -343,7 +343,7 @@ onUnmounted(() => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="symbol in cryptoIds" :key="symbol" class="border-b hover:bg-gray-50">
+                      <tr v-for="symbol in cryptoIds" :key="symbol" class="border-b border-gray-700 hover:bg-gray-900">
                         <td class="p-4 flex items-center">
                           <img
                             :src="cryptoStore.getIcon(symbol)"
@@ -355,7 +355,7 @@ onUnmounted(() => {
                         <td class="p-4">${{ cryptoStore.getPrice(symbol) || 'N/A' }}</td>
                         <td
                           class="p-4"
-                          :class="cryptoStore.getChange(symbol) >= 0 ? 'text-green-600' : 'text-red-500'"
+                          :class="cryptoStore.getChange(symbol) >= 0 ? 'text-green-400' : 'text-red-400'"
                         >
                           {{ cryptoStore.getChange(symbol) || 'N/A' }}%
                         </td>
