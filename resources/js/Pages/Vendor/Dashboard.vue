@@ -504,6 +504,20 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.bg-black,
+.bg-black.bg-opacity-95,
+.bg-transparent,
+section.bg-black,
+main,
+.container,
+.lg\:block.bg-black {
+  background-color: #181A20 !important;
+}
+
+.text-white {
+  color: #fff !important;
+}
+
 /* Fade Transition for Messages and News */
 .fade-enter-active,
 .fade-leave-active {

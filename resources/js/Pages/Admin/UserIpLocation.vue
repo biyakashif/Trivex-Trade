@@ -81,7 +81,7 @@ const page = computed(() => ({
                                 <Link
                                     v-if="savedLocations.prev_page_url"
                                     :href="savedLocations.prev_page_url"
-                                    class="px-3 py-1 border rounded text-sm bg-white border-gray-300 hover:bg-gray-100"
+                                    class="px-3 py-1 border rounded text-sm action-btn"
                                 >
                                     Previous
                                 </Link>
@@ -91,7 +91,7 @@ const page = computed(() => ({
                                         v-if="link.url && !['Previous', 'Next'].includes(link.label)"
                                         :href="link.url"
                                         class="px-3 py-1 border rounded text-sm"
-                                        :class="link.active ? 'bg-blue-500 text-white border-blue-500' : 'bg-white border-gray-300 hover:bg-gray-100'"
+                                        :class="link.active ? 'action-btn border-transparent' : 'bg-white border-gray-300 hover:bg-gray-100'"
                                     >
                                         {{ link.label }}
                                     </Link>
@@ -100,7 +100,7 @@ const page = computed(() => ({
                                 <Link
                                     v-if="savedLocations.next_page_url"
                                     :href="savedLocations.next_page_url"
-                                    class="px-3 py-1 border rounded text-sm bg-white border-gray-300 hover:bg-gray-100"
+                                    class="px-3 py-1 border rounded text-sm action-btn"
                                 >
                                     Next
                                 </Link>

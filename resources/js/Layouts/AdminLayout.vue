@@ -94,9 +94,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen admin-dark">
         <AdminSidebar :sidebarOpen="sidebarOpen" :safeRoute="safeRoute" @toggle-sidebar="toggleSidebar" />
-        <nav class="bg-blue-800 text-white shadow-lg sticky top-0 z-50">
+        <nav class="admin-topnav text-white shadow-lg sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center h-16">
                     <div class="flex items-center">
@@ -113,7 +113,7 @@ onUnmounted(() => {
                                 type="checkbox"
                                 v-model="isRegistrationDisabled"
                                 @change="updateRegistrationStatus"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                class="h-4 w-4 text-blue-400 focus:ring-blue-300 border-gray-600 rounded bg-black"
                             />
                             <span class="text-sm">Disable Registration</span>
                         </label>
@@ -124,8 +124,8 @@ onUnmounted(() => {
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transform -translate-y-2 transition-all duration-200">
-                                <button @click="logout" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                            <div class="absolute right-0 mt-2 w-48 admin-topnav group-menu rounded-md shadow-lg py-1 z-10 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transform -translate-y-2 transition-all duration-200">
+                                <button @click="logout" class="block w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-700 hover:text-white">
                                     Logout
                                 </button>
                             </div>

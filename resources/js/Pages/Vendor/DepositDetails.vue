@@ -288,3 +288,32 @@ const submitDeposit = () => {
     </div>
   </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.bg-black {
+  background-color: #181A20 !important;
+}
+
+.text-white {
+  color: #fff !important;
+}
+
+/* Only update button and clickable backgrounds/colors, do not change size or border-radius */
+button,
+button[type="submit"],
+button[type="button"],
+.copy-btn,
+.deposit-btn {
+  background: #23262F !important;
+  color: #fff !important;
+  transition: background 0.2s, color 0.2s;
+}
+button:hover,
+button[type="submit"]:hover,
+button[type="button"]:hover,
+.copy-btn:hover,
+.deposit-btn:hover {
+  background: #f3f4f6 !important;
+  color: #181A20 !important;
+}
+</style>

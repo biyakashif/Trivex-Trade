@@ -183,9 +183,9 @@ onUnmounted(() => {
                   <Link
                     v-if="!isRegistrationDisabled"
                     :href="route('register')"
-                    class="bg-white text-black px-6 py-1 rounded-lg md:rounded-l-none hover:bg-gray-200 text-base font-normal transition-all duration-300 shadow-md hover:shadow-lg"
+                    class="register-now-btn md:rounded-l-none"
                   >
-                Register Now
+                    Register Now
                   </Link>
                 </div>
                 <!-- Registration Disabled Message -->
@@ -202,25 +202,7 @@ onUnmounted(() => {
 
       <!-- Welcome Section -->
       <section class="py-16 px-6 md:px-12 bg-black relative">
-        <!-- Scattered Crypto Icons -->
-        <div class="absolute inset-0 z-0 overflow-hidden">
-          <div
-            v-for="(symbol, index) in cryptoIds"
-            :key="symbol"
-            class="crypto-icon absolute"
-            :class="`animation-delay-${index}`"
-            :style="{
-              top: index % 2 === 0 ? `${Math.random() * 20 + 10}%` : `${Math.random() * 60 + 30}%`,
-              left: index < 4 ? `${Math.random() * 20 + 10}%` : `${Math.random() * 60 + 30}%`,
-            }"
-          >
-            <img
-              :src="cryptoStore.getIcon(symbol)"
-              :alt="`${symbol} icon`"
-              class="w-16 h-16 transition-transform duration-300 hover:scale-110 opacity-30"
-            />
-          </div>
-        </div>
+        <!-- Removed background crypto icon animation for cleaner dark theme -->
 
         <div class="container mx-auto relative z-10">
           <!-- App Download and Images -->
@@ -383,102 +365,77 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Custom Color Variables */
-:root {
-  --navy-900: #1a202c;
-  --teal-600: #319795;
-  --teal-700: #2c7a7b;
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
+
+body {
+  background: #181A20;
 }
 
-/* Crypto Icon Animation */
-.crypto-icon {
-  opacity: 0;
-  transform: translateX(-4rem);
-  animation: slideInFade 0.8s ease-out forwards;
+.bg-black,
+.bg-black.bg-opacity-95,
+.bg-transparent,
+section.bg-black,
+main,
+.container,
+.md\:block.bg-black {
+  background-color: #181A20 !important;
 }
 
-@keyframes slideInFade {
-  0% {
-    opacity: 0;
-    transform: translateX(-4rem);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #23262F inset !important;
+  box-shadow: 0 0 0 1000px #23262F inset !important;
+  -webkit-text-fill-color: #fff !important;
+  caret-color: #fff !important;
+  color: #fff !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
-/* Animation Delays for Mobile (3 Icons) */
-@media (max-width: 768px) {
-  .crypto-icon.animation-delay-0 {
-    animation-delay: 0.2s;
-  }
-  .crypto-icon.animation-delay-1 {
-    animation-delay: 0.4s;
-  }
-  .crypto-icon.animation-delay-2 {
-    animation-delay: 0.6s;
-  }
+button[type="submit"],
+a.bg-white,
+a.bg-white:visited {
+  background: #23262F !important;
+  color: #fff !important;
+  border-radius: 9999px;
+  width: 100%;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 400;
+  box-shadow: none;
+  transition: background 0.2s, color 0.2s;
+  min-height: 2.2rem;
+  text-align: center;
+  display: inline-block;
+}
+button[type="submit"]:hover:not(:disabled),
+a.bg-white:hover {
+  background: #f3f4f6 !important;
+  color: #181A20 !important;
+}
+button[type="submit"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-/* Animation Delays for Desktop (8 Icons) */
-@media (min-width: 768px) {
-  .crypto-icon.animation-delay-0 {
-    animation-delay: 0.2s;
-  }
-  .crypto-icon.animation-delay-1 {
-    animation-delay: 0.4s;
-  }
-  .crypto-icon.animation-delay-2 {
-    animation-delay: 0.6s;
-  }
-  .crypto-icon.animation-delay-3 {
-    animation-delay: 0.8s;
-  }
-  .crypto-icon.animation-delay-4 {
-    animation-delay: 1.0s;
-  }
-  .crypto-icon.animation-delay-5 {
-    animation-delay: 1.2s;
-  }
-  .crypto-icon.animation-delay-6 {
-    animation-delay: 1.4s;
-  }
-  .crypto-icon.animation-delay-7 {
-    animation-delay: 1.6s;
-  }
+.register-now-btn {
+  background: #23262F !important;
+  color: #fff !important;
+  border-radius: 9999px;
+  width: 100%;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 400;
+  box-shadow: none;
+  transition: background 0.2s, color 0.2s;
+  min-height: 2.2rem;
+  text-align: center;
+  display: inline-block;
 }
-
-/* Button Hover Effects */
-a.bg-blue-600,
-a.bg-gray-800 {
-  transition: all 0.3s ease;
-}
-
-a.bg-blue-600:hover,
-a.bg-gray-800:hover {
-  transform: translateY(-2px);
-}
-
-/* Input Field Styles */
-input {
-  transition: all 0.3s ease;
-}
-
-input:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(49, 151, 149, 0.3);
-}
-
-/* Smooth Scroll Behavior */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Table Row Hover */
-tbody tr {
-  transition: background-color 0.2s ease;
+.register-now-btn:hover {
+  background: #f3f4f6 !important;
+  color: #181A20 !important;
 }
 </style>

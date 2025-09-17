@@ -1,7 +1,6 @@
 <script setup>
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 
@@ -91,7 +90,7 @@ const form = useForm({
             </div>
 
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing" class="bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500" >Save</PrimaryButton>
+                <button :disabled="form.processing" class="action-btn focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed">Save</button>
 
                 <Transition
                     enter-active-class="transition ease-in-out"
@@ -110,3 +109,19 @@ const form = useForm({
         </form>
     </section>
 </template>
+
+<style scoped>
+.action-btn {
+    background: #23262F !important;
+    color: #fff !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+.action-btn:hover {
+    background: #f3f4f6 !important;
+    color: #181A20 !important;
+}
+.action-btn:hover * {
+    color: #181A20 !important;
+}
+</style>

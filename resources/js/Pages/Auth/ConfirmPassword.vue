@@ -1,50 +1,50 @@
-
 <template>
-    <!-- Navbar/Header -->
-    <NavLink />
-    <div class="min-h-screen bg-black flex items-center justify-center py-16 relative overflow-hidden">
-        <div class="bg-black p-6 rounded-lg shadow-md w-full max-w-md border border-gray-700 text-white z-10">
-            <div class="flex justify-center mb-5">
-                <img src="/path/to/your/logo.png" alt="Logo" class="w-20 h-20" />
-            </div>
-            <div class="mb-4 text-sm text-gray-300 text-center">
-                This is a secure area of the application. Please confirm your password before continuing.
-            </div>
-            <div v-if="Object.keys(form.errors).length" class="mb-4 text-red-400 text-sm">
-                <div v-for="error in form.errors" :key="error">{{ error }}</div>
-            </div>
-            <form @submit.prevent="submit">
-                <div class="mb-4">
-                    <label for="password" class="block text-white text-sm font-medium">Password</label>
-                    <input
-                        id="password"
-                        v-model="form.password"
-                        type="password"
-                        class="mt-1 w-full p-2 border border-gray-700 rounded-md focus:ring focus:ring-blue-500 bg-black text-white placeholder-gray-500"
-                        :class="{ 'border-red-500': form.errors.password }"
-                        required
-                        autocomplete="current-password"
-                    />
-                </div>
-                <div class="flex justify-center">
-                    <button
-                        type="submit"
-                        class="bg-white text-black w-full py-0.5 rounded-full hover:bg-gray-200 disabled:opacity-50 text-base font-semibold shadow-md"
-                        :disabled="form.processing"
-                    >
-                        Confirm
-                    </button>
-                </div>
-            </form>
-        </div>
+<div class="min-h-screen flex flex-col items-center justify-center bg-[#181A20] px-4">
+    <div class="mb-8 flex justify-center w-full">
+        <Link :href="route('welcome')">
+            <ApplicationLogo class="h-6 w-auto" />
+        </Link>
     </div>
+    <form @submit.prevent="submit" class="w-full max-w-sm">
+        <h2 class="text-white text-3xl font-bold mb-6">Confirm Password</h2>
+        <div class="mb-4 text-sm text-gray-300 text-center">
+            This is a secure area of the application. Please confirm your password before continuing.
+        </div>
+        <div v-if="Object.keys(form.errors).length" class="mb-4 text-red-400 text-sm">
+            <div v-for="error in form.errors" :key="error">{{ error }}</div>
+        </div>
+        <div class="mb-8">
+            <label for="password" class="block text-sm text-white mb-2">Password</label>
+            <input
+                id="password"
+                v-model="form.password"
+                type="password"
+                class="w-full px-4 py-2 rounded-md bg-[#23262F] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 border-none"
+                :class="{ 'ring-2 ring-red-500': form.errors.password }"
+                placeholder="Password"
+                required
+                autocomplete="current-password"
+            />
+        </div>
+        <button
+            type="submit"
+            :disabled="form.processing"
+        >
+            Confirm
+        </button>
+    </form>
+</div>
 </template>
 
 <script>
-import { useForm } from '@inertiajs/vue3';
+import { useForm, Link } from '@inertiajs/vue3';
+import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 
 export default {
     name: 'ConfirmPassword',
+    components: {
+        ApplicationLogo,
+    },
     setup() {
         const form = useForm({
             password: '',
@@ -62,11 +62,41 @@ export default {
 </script>
 
 <style scoped>
-.confirm-card {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+body {
+    background: #181A20;
 }
 
-input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #23262F inset !important;
+    box-shadow: 0 0 0 1000px #23262F inset !important;
+    -webkit-text-fill-color: #fff !important;
+    caret-color: #fff !important;
+    color: #fff !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+button[type="submit"] {
+    background: #23262F;
+    color: #fff;
+    border-radius: 9999px;
+    width: 100%;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 400;
+    box-shadow: none;
+    transition: background 0.2s, color 0.2s;
+    min-height: 2.2rem;
+}
+button[type="submit"]:hover:not(:disabled) {
+    background: #f3f4f6;
+    color: #181A20;
+}
+button[type="submit"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 </style>

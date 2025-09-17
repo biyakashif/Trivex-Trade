@@ -170,7 +170,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('/withdrawals/edit/{id}', [AdminWithdrawController::class, 'edit'])->name('admin.withdrawals.edit');
         Route::post('/withdrawals/update/{id}', [AdminWithdrawController::class, 'update'])->name('admin.withdrawals.update');
 
-        Route::get('/manage-messages', fn () => Inertia::render('Admin/ManageMessages'))->name('admin.manage.messages');
+    // Route::get('/manage-messages', fn () => Inertia::render('Admin/ManageMessages'))->name('admin.manage.messages');
 
         Route::get('/users', [AdminController::class, 'getUsers'])->name('admin.users.index');
         Route::post('/users/block/{id}', [AdminController::class, 'blockUser'])->name('admin.users.block');

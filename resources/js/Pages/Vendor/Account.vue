@@ -126,7 +126,7 @@ const fetchTradeHistory = async () => {
           <div class="bg-black rounded-xl shadow-lg p-4 border border-gray-800">
             <button
               @click="editProfile"
-              class="w-full px-4 py-2 bg-black text-white border border-gray-700 rounded-md text-sm font-medium hover:bg-gray-900 transition-colors duration-200"
+              class="w-full px-4 py-2 action-btn border border-gray-700 rounded-md text-sm font-medium transition-colors duration-200"
             >
               Edit Profile
             </button>
@@ -134,7 +134,7 @@ const fetchTradeHistory = async () => {
           <div class="bg-black rounded-xl shadow-lg p-4 border border-gray-800">
             <button
               @click="fetchTradeHistory"
-              class="w-full px-4 py-2 bg-black text-white border border-gray-700 rounded-md text-sm font-medium hover:bg-gray-900 transition-colors duration-200"
+              class="w-full px-4 py-2 action-btn border border-gray-700 rounded-md text-sm font-medium transition-colors duration-200"
             >
               Trade History
             </button>
@@ -142,7 +142,7 @@ const fetchTradeHistory = async () => {
           <div class="bg-black rounded-xl shadow-lg p-4 border border-gray-800">
             <button
               @click="logout"
-              class="w-full px-4 py-2 bg-black text-white border border-gray-700 rounded-md text-sm font-medium hover:bg-gray-900 transition-colors duration-200"
+              class="w-full px-4 py-2 action-btn border border-gray-700 rounded-md text-sm font-medium transition-colors duration-200"
             >
               Logout
             </button>
@@ -202,3 +202,26 @@ const fetchTradeHistory = async () => {
     </div>
   </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.bg-black {
+  background-color: #181A20 !important;
+}
+
+.text-white {
+  color: #fff !important;
+}
+
+/* Action button style (dark -> light on hover) */
+.action-btn {
+  background: #23262F !important;
+  color: #fff !important;
+}
+.action-btn:hover {
+  background: #f3f4f6 !important;
+  color: #181A20 !important;
+}
+.action-btn:hover * {
+  color: #181A20 !important;
+}
+</style>

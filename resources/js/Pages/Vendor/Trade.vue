@@ -326,3 +326,76 @@ onUnmounted(() => {
     </div>
   </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.bg-black,
+.bg-gray-100,
+.bg-white {
+  background-color: #181A20 !important;
+}
+
+.text-gray-900,
+.text-gray-800,
+.text-gray-600 {
+  color: #fff !important;
+}
+
+button,
+button[type="submit"],
+button[type="button"] {
+  background: #23262F !important;
+  color: #fff !important;
+  transition: background 0.2s, color 0.2s;
+}
+button:hover,
+button[type="submit"]:hover,
+button[type="button"]:hover {
+  background: #f3f4f6 !important;
+  color: #181A20 !important;
+}
+
+/* Table row hover for mobile and desktop */
+.hover\:bg-gray-100:hover,
+tr:hover {
+  background: #23262F !important;
+}
+
+/* Table header backgrounds */
+.bg-gray-200 {
+  background-color: #23262F !important;
+}
+
+/* Table border color */
+.border-gray-200,
+.border-gray-800 {
+  border-color: #23262F !important;
+}
+
+/* Modal background */
+.bg-white {
+  background-color: #23262F !important;
+}
+
+/* Modal text */
+.text-gray-800,
+.text-gray-600 {
+  color: #fff !important;
+}
+
+/* Status colors */
+.text-green-600 {
+  color: #22c55e !important;
+}
+.text-red-600 {
+  color: #ef4444 !important;
+}
+.text-yellow-600 {
+  color: #eab308 !important;
+}
+.bg-green-500 {
+  background-color: #22c55e !important;
+}
+.bg-red-500 {
+  background-color: #ef4444 !important;
+}
+</style>

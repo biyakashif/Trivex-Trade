@@ -110,15 +110,16 @@ onMounted(() => {
 
   <AuthenticatedLayout>
     <template #header>
+
+    </template>
+
+    <div class="max-w-2xl mx-auto py-6 px-4 sm:max-w-full sm:px-6 lg:px-8">
       <div class="flex items-center justify-center space-x-2 pt-4">
         <ArrowUpIcon class="h-6 w-6 text-green-400" />
         <h2 class="text-2xl py-3 font-bold text-white">
           Grow Your Investment
         </h2>
       </div>
-    </template>
-
-    <div class="max-w-2xl mx-auto py-6 px-4 sm:max-w-full sm:px-6 lg:px-8">
       <!-- Balance Section -->
       <div class="bg-black shadow-md rounded-lg p-6 mb-6 sm:p-4 border border-gray-800">
         <p class="text-sm text-gray-300 sm:text-xs">Current USDT Balance</p>
@@ -165,7 +166,7 @@ onMounted(() => {
         <!-- Start Investment Button -->
         <button
           @click="showForm = true"
-          class="w-full bg-white text-black font-normal py-1 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 mb-6 sm:py-0.5 sm:text-sm border border-gray-300"
+          class="w-full action-btn font-normal py-1 rounded-lg shadow-md transition duration-300 mb-6 sm:py-0.5 sm:text-sm border border-gray-300"
         >
           Start New Investment
         </button>
@@ -210,13 +211,13 @@ onMounted(() => {
             <button
               @click="startInvestment"
               :disabled="!selectedPlan || !investmentAmount"
-              class="w-full bg-white text-black font-normal py-1 sm:py-0.5 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm border border-gray-300"
+              class="w-full action-btn disabled:opacity-60 disabled:cursor-not-allowed font-normal py-1 sm:py-0.5 rounded-lg shadow-md transition duration-300 text-sm border border-gray-300"
             >
               Confirm
             </button>
             <button
               @click="showForm = false; selectedPlan = null; investmentAmount = '';"
-              class="w-full bg-white text-black font-normal py-1 sm:py-0.5 rounded-lg shadow-md hover:bg-gray-100 transition duration-300 text-sm border border-gray-300"
+              class="w-full action-btn font-normal py-1 sm:py-0.5 rounded-lg shadow-md transition duration-300 text-sm border border-gray-300"
             >
               Cancel
             </button>
@@ -249,3 +250,28 @@ onMounted(() => {
     </div>
   </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.bg-black {
+  background-color: #181A20 !important;
+}
+
+.text-white {
+  color: #fff !important;
+}
+
+/* Action button style copied from Deposit.vue design */
+.action-btn {
+  background: #23262F !important;
+  color: #fff !important;
+}
+.action-btn:hover {
+  background: #f3f4f6 !important;
+  color: #181A20 !important;
+}
+
+/* Ensure inner text color flips on hover */
+.action-btn:hover * {
+  color: #181A20 !important;
+}
+</style>

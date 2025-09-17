@@ -294,9 +294,9 @@ const strokeDashoffset = computed(() => {
   <Head :title="`${currentSymbol.toUpperCase()} Trade`" />
   <AuthenticatedLayout>
     <template #header></template>
-    <div class="h-screen flex flex-col bg-black">
+  <div class="h-screen flex flex-col bg-[#181A20]">
       <div class="flex flex-col flex-1 max-w-4xl mx-auto w-full px-2 sm:px-4 lg:px-6">
-        <div class="bg-black rounded-lg shadow flex flex-col flex-1 overflow-hidden border border-gray-800">
+  <div class="bg-[#181A20] rounded-lg shadow flex flex-col flex-1 overflow-hidden border border-gray-800">
           <div class="p-6 sm:p-6 flex flex-col flex-1 text-white">
             <div class="flex justify-between items-center mb-2">
               <div>
@@ -305,7 +305,7 @@ const strokeDashoffset = computed(() => {
                   <button
                     @click="dropdownOpen = !dropdownOpen"
                     type="button"
-                    class="w-full flex items-center justify-between px-3 py-2 border rounded-md bg-black text-white border-gray-700"
+                    class="w-full flex items-center justify-between px-3 py-2 border rounded-md bg-[#23262F] text-white border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                     aria-haspopup="listbox"
                     :aria-expanded="dropdownOpen ? 'true' : 'false'"
                   >
@@ -323,14 +323,14 @@ const strokeDashoffset = computed(() => {
                     v-if="dropdownOpen"
                     tabindex="-1"
                     role="listbox"
-                    class="absolute z-20 mt-1 w-full bg-black border border-gray-700 rounded-md shadow-lg max-h-48 overflow-auto"
+                    class="absolute z-20 mt-1 w-full bg-[#23262F] border-none rounded-md shadow-lg max-h-48 overflow-auto"
                   >
                     <li
                       v-for="coin in availableCryptos"
                       :key="coin.symbol"
                       role="option"
                       @click="selectCoin(coin.symbol)"
-                      class="flex items-center px-3 py-2 hover:bg-gray-900 cursor-pointer text-white"
+                      class="flex items-center px-3 py-2 hover:bg-[#f3f4f6] hover:text-[#181A20] cursor-pointer text-white transition-colors"
                     >
                       <img :src="coin.icon || 'https://via.placeholder.com/24'" class="h-5 w-5 rounded-full mr-3" :alt="coin.symbol" />
                       <span class="flex-1">{{ coin.symbol }}</span>
@@ -361,7 +361,7 @@ const strokeDashoffset = computed(() => {
                 ></iframe>
               </div>
             </div>
-            <div class="bg-black rounded-lg p-2 sm:p-4 mb-2 sm:mb-4 shadow-sm border border-gray-800">
+            <div class="bg-[#23262F] rounded-lg p-2 sm:p-4 mb-2 sm:mb-4 shadow-sm border border-gray-800">
               <h4 class="text-sm sm:text-base font-semibold text-white mb-2 sm:mb-3">Market Statistics</h4>
               <div class="flex items-center justify-between mb-1 sm:mb-2">
                 <div class="flex items-center space-x-1 sm:space-x-2 text-white">
@@ -394,7 +394,7 @@ const strokeDashoffset = computed(() => {
             <div>
               <button
                 @click="toggleOrderForm"
-                class="w-full py-3 sm:py-4 text-white font-semibold rounded-lg bg-black border border-gray-700 hover:bg-gray-900 transition duration-300 text-sm sm:text-base"
+                class="w-full py-3 sm:py-4 text-white font-semibold rounded-full bg-[#23262F] hover:bg-[#f3f4f6] hover:text-[#181A20] focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base"
               >
                 Order
               </button>
@@ -405,9 +405,9 @@ const strokeDashoffset = computed(() => {
     </div>
 
     <!-- Order Form Modal -->
-    <div v-if="showOrderForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-black rounded-lg w-full max-w-md p-6 relative border border-gray-800">
-        <button @click="toggleOrderForm" class="absolute top-2 right-2 text-gray-400 hover:text-white">
+    <div v-if="showOrderForm" class="fixed inset-0 bg-[#181A20] bg-opacity-95 flex items-center justify-center z-50">
+      <div class="bg-[#23262F] rounded-lg w-full max-w-md p-6 relative border border-gray-800">
+          <button @click="toggleOrderForm" class="absolute top-2 right-2 text-gray-400 hover:text-white">
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -419,7 +419,7 @@ const strokeDashoffset = computed(() => {
         <div v-if="errorMessage" class="bg-red-900 border-l-4 border-red-500 text-red-200 p-4 mb-4 rounded-r-lg">
           <p>{{ errorMessage }}</p>
         </div>
-        <div class="space-y-4">
+  <div class="space-y-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
                 <img :src="cryptoStore.getIcon((currentSymbol.value||'BTC').toLowerCase()) || 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png'" :alt="currentSymbol" class="h-6 w-6" />
@@ -544,17 +544,28 @@ const strokeDashoffset = computed(() => {
     </div>
 
     <!-- Trade Result Modal -->
-    <div v-if="showResultModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-2">
-      <div class="bg-black rounded-xl shadow-md w-full max-w-sm sm:max-w-md p-4 sm:p-6 relative border border-gray-800">
-        <button @click="closeResultModal" class="absolute top-2 right-2 text-gray-400 hover:text-white">
+    <div v-if="showResultModal" class="fixed inset-0 bg-[#181A20] bg-opacity-95 flex items-center justify-center z-50 px-2">
+  <div class="bg-[#23262F] rounded-xl shadow-md w-full max-w-sm sm:max-w-md p-4 sm:p-6 relative border border-gray-800 overflow-hidden">
+        <!-- Subtle dark gradient from bottom-right to center -->
+        <svg class="absolute -bottom-16 -right-16 w-[48rem] h-[48rem] pointer-events-none select-none z-0" viewBox="0 0 800 800" fill="none">
+          <defs>
+            <radialGradient id="modalDarkGrad" cx="50%" cy="50%" r="80%" fx="50%" fy="50%">
+              <stop offset="0%" stop-color="#000000" stop-opacity="1" />
+              <stop offset="60%" stop-color="#181A20" stop-opacity="0.98" />
+              <stop offset="90%" stop-color="#181A20" stop-opacity="0.0" />
+            </radialGradient>
+          </defs>
+          <ellipse cx="400" cy="400" rx="400" ry="400" fill="url(#modalDarkGrad)" />
+        </svg>
+        <button @click="closeResultModal" class="absolute top-2 right-2 text-gray-400 hover:text-white z-10">
           <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <h3 class="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 text-center">
+  <h3 class="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 text-center z-10 relative">
           {{ timeLeft > 0 ? 'Waiting for settlement' : 'Trade Details' }}
         </h3>
-        <div v-if="timeLeft > 0" class="text-center">
+  <div v-if="timeLeft > 0" class="text-center z-10 relative">
           <div class="relative w-28 h-28 sm:w-32 sm:h-32 mx-auto">
             <svg class="w-full h-full" viewBox="0 0 200 200">
               <!-- Background circle -->
@@ -608,7 +619,7 @@ const strokeDashoffset = computed(() => {
           </div>
           <p class="mt-4 text-white italic text-sm sm:text-base">Waiting...</p>
         </div>
-        <div v-else class="text-center">
+  <div v-else class="text-center z-10 relative">
           <div class="relative w-28 h-28 sm:w-32 sm:h-32 mx-auto">
             <svg class="w-full h-full" viewBox="0 0 200 200">
               <!-- Background circle -->
@@ -692,19 +703,33 @@ const strokeDashoffset = computed(() => {
               <span v-else class="text-lg sm:text-xl font-bold text-red-500">LOSS</span>
             </div>
           </div>
-          <div class="mt-4 bg-gray-900 shadow-md rounded-lg p-4 border border-gray-800">
-            <div class="grid grid-cols-2 gap-2 text-sm sm:text-base text-white">
-              <div class="font-semibold">Hosted Amount:</div>
-              <div>${{ tradeResult ? tradeResult.trade_amount.toFixed(2) : '0.00' }}</div>
-              <div v-if="tradeResult && !tradeResult.lossApplied" class="font-semibold">Total Amount:</div>
-              <div v-if="tradeResult && !tradeResult.lossApplied">${{ tradeResult ? (tradeResult.trade_amount + tradeResult.profit_earned).toFixed(2) : '0.00' }}</div>
-              <div v-if="tradeResult && !tradeResult.lossApplied" class="font-semibold">Buy Price:</div>
-              <div v-if="tradeResult && !tradeResult.lossApplied">${{ btcPrice }}</div>
-              <div class="font-semibold">Trade Direction:</div>
-              <div>{{ tradeResult ? (tradeResult.direction === 'up' ? 'Rise' : 'Fall') : 'N/A' }}</div>
-              <div v-if="tradeResult && tradeResult.lossApplied" class="font-semibold">Loss Amount:</div>
-              <div v-if="tradeResult && tradeResult.lossApplied">${{ tradeResult ? tradeResult.trade_amount.toFixed(2) : '0.00' }}</div>
-            </div>
+          <div class="mt-4 bent-card relative bg-gradient-to-br from-[#23262F] via-[#23262F] to-[#181A20] shadow-lg rounded-2xl px-6 py-4 border border-gray-700/70">
+            <!-- SVG mask for curved bent effect (modern, more pronounced) -->
+            <svg class="absolute bottom-0 right-0 w-20 h-20 pointer-events-none select-none z-10" viewBox="0 0 80 80">
+              <path d="M80,80 Q80,40 40,80 Z" fill="#181A20" />
+            </svg>
+            <ul class="divide-y divide-gray-200/20 text-sm text-white pl-0 sm:pl-1 text-left">
+              <li class="flex justify-between items-center py-1 first:pt-0 last:pb-0">
+                <span class="text-xs font-normal text-gray-300">Hosted Amount</span>
+                <span class="font-medium">${{ tradeResult ? tradeResult.trade_amount.toFixed(2) : '0.00' }}</span>
+              </li>
+              <li v-if="tradeResult && !tradeResult.lossApplied" class="flex justify-between items-center py-1 first:pt-0 last:pb-0">
+                <span class="text-xs font-normal text-gray-300">Total Amount</span>
+                <span class="font-medium">${{ tradeResult ? (tradeResult.trade_amount + tradeResult.profit_earned).toFixed(2) : '0.00' }}</span>
+              </li>
+              <li v-if="tradeResult && !tradeResult.lossApplied" class="flex justify-between items-center py-1 first:pt-0 last:pb-0">
+                <span class="text-xs font-normal text-gray-300">Buy Price</span>
+                <span class="font-medium">${{ btcPrice }}</span>
+              </li>
+              <li class="flex justify-between items-center py-1 first:pt-0 last:pb-0">
+                <span class="text-xs font-normal text-gray-300">Trade Direction</span>
+                <span class="font-medium">{{ tradeResult ? (tradeResult.direction === 'up' ? 'Rise' : 'Fall') : 'N/A' }}</span>
+              </li>
+              <li v-if="tradeResult && tradeResult.lossApplied" class="flex justify-between items-center py-1 first:pt-0 last:pb-0">
+                <span class="text-xs font-normal text-gray-300">Loss Amount</span>
+                <span class="font-medium">${{ tradeResult ? tradeResult.trade_amount.toFixed(2) : '0.00' }}</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -743,3 +768,9 @@ const strokeDashoffset = computed(() => {
   }
 }
 </style>
+
+/* Custom bent/cut bottom-right corner for trade details card */
+.bent-card {
+  position: relative;
+  overflow: hidden;
+}

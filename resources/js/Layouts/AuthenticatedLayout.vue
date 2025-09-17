@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-black text-white">
+    <div class="min-h-screen bg-[#181A20] text-white">
         <div>
             <slot name="header" />
         </div>
