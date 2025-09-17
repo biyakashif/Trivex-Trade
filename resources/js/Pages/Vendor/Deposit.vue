@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { useCryptoStore } from '@/Store/crypto';
 import { formatBalance } from '@/utils/formatBalance';
-import { ArrowsRightLeftIcon, ArrowDownCircleIcon } from '@heroicons/vue/24/solid';
+import { ChevronLeftIcon } from '@heroicons/vue/24/solid';
 
 // Access the crypto store
 const cryptoStore = useCryptoStore();
@@ -32,14 +32,18 @@ const goToDetails = (symbol) => {
   router.visit(route('deposit.details', { symbol }));
 };
 
-// Function to navigate to the swap page
-const goToSwap = () => {
-  router.visit(route('swap.index'));
+// Function to navigate back
+const goBack = () => {
+  // most reliable: browser history
+  history.back();
 };
 
-// Function to navigate to the withdraw page
-const goToWithdraw = () => {
-  router.visit(route('withdraw'));
+// Helper to produce the amounts shown on the right side (large fiat-like line + small crypto line)
+const displayAmounts = (crypto) => {
+  const raw = props.balances[crypto.balanceKey] ?? 0;
+  const primary = `US$ ${formatBalance(raw, crypto.decimals)}`;
+  const secondary = `${formatBalance(raw, crypto.decimals)} ${crypto.symbol.toUpperCase()}`;
+  return { primary, secondary };
 };
 </script>
 
@@ -47,59 +51,43 @@ const goToWithdraw = () => {
   <Head title="Deposit" />
   <AuthenticatedLayout>
     <template #header>
-      <!-- <h1 class="text-2xl font-bold text-white">Deposit</h1> -->
+      <!-- blank - custom header inside page -->
     </template>
 
-    <div class="py-4 bg-black min-h-screen">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Crypto Deposit Section -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-white mb-4">Crypto Deposit</h2>
-          <div class="space-y-4">
-            <div
-              v-for="crypto in cryptos"
-              :key="crypto.symbol"
-              @click="goToDetails(crypto.symbol)"
-              class="relative bg-black rounded-xl shadow-md p-4 cursor-pointer hover:scale-105 transition-transform duration-200 border border-gray-800"
-            >
-              <img
-                :src="cryptoStore.getIcon(crypto.symbol)"
-                alt="Crypto icon"
-                class="w-6 h-6 mr-3"
-              />
-              <div class="flex justify-between items-center">
-                <div>
-                  <p class="font-semibold text-white">{{ crypto.symbol.toUpperCase() }}</p>
-                  <p class="text-sm text-gray-400">{{ crypto.name }}</p>
-                </div>
-                <div class="text-sm text-white">
-                  <p>Balance: <span :class="crypto.symbol === 'usdt' ? 'text-green-400' : crypto.symbol === 'btc' ? 'text-orange-400' : 'text-blue-400'">{{ formatBalance(props.balances[crypto.balanceKey], crypto.decimals) }}</span> {{ crypto.symbol.toUpperCase() }}</p>
-                </div>
-              </div>
+    <div class="py-6 bg-black min-h-screen">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Top header with back button and illustration -->
+        <div class="flex items-start justify-between mb-6">
+          <div class="flex items-center space-x-4">
+            <button @click="goBack" class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shadow-md">
+              <ChevronLeftIcon class="w-5 h-5 text-white" />
+            </button>
+            <div>
+              <h1 class="text-2xl font-bold text-white">Sending encrypted currency immediately</h1>
+              <p class="text-sm text-gray-400 mt-1">Select a wallet to send encrypted currency</p>
             </div>
           </div>
+
+          <!-- placeholder illustration: keep same dark look but allow image slot -->
+          <div class="hidden sm:block w-36 h-24 bg-gradient-to-br from-blue-400 to-blue-200 rounded-lg opacity-90"></div>
         </div>
 
-        <!-- Actions Section -->
-        <div class="bg-black shadow-lg rounded-xl p-6 border border-gray-800">
-          <h2 class="text-lg font-semibold text-white mb-4">Actions</h2>
-          <div class="flex flex-col sm:flex-row sm:justify-center sm:space-x-4 space-y-4 sm:space-y-0">
-            <!-- Swap Card -->
-            <div
-              @click="goToSwap"
-              class="relative bg-black rounded-xl shadow-md p-4 cursor-pointer hover:bg-gray-900 transition-transform duration-200 min-w-[200px] flex-1 flex items-center justify-between border border-gray-700 swap-card"
-            >
-              <ArrowsRightLeftIcon class="w-6 h-6 text-white mr-3" />
-              <div class="text-white font-bold">Swap</div>
+        <!-- Wallet list (large rows) -->
+        <div class="bg-black rounded-xl border border-gray-800 overflow-hidden">
+          <div v-for="crypto in cryptos" :key="crypto.symbol" @click="goToDetails(crypto.symbol)" class="wallet-row flex items-center justify-between px-4 py-5 border-b border-gray-800 cursor-pointer hover:bg-gray-900 transition-colors">
+            <div class="flex items-center space-x-4">
+              <img :src="cryptoStore.getIcon(crypto.symbol)" alt="icon" class="w-10 h-10 rounded-full" />
+              <div>
+                <div class="text-white text-lg font-semibold">{{ crypto.name }} Wallet</div>
+                <div class="text-sm text-gray-400">{{ crypto.name }} Coin</div>
+              </div>
             </div>
 
-            <!-- Withdraw Card -->
-            <div
-              @click="goToWithdraw"
-              class="relative bg-black rounded-xl shadow-md p-4 cursor-pointer hover:bg-gray-900 transition-transform duration-200 min-w-[200px] flex-1 flex items-center justify-between border border-gray-700 withdraw-card"
-            >
-              <ArrowDownCircleIcon class="w-6 h-6 text-white mr-3" />
-              <div class="text-white font-bold">Withdraw</div>
+            <div class="text-right">
+              <div class="text-xl text-white font-semibold">
+                {{ displayAmounts(crypto).primary }}
+              </div>
+              <div class="text-sm text-gray-400 mt-1">{{ displayAmounts(crypto).secondary }}</div>
             </div>
           </div>
         </div>
@@ -136,5 +124,18 @@ const goToWithdraw = () => {
 .swap-card:hover *,
 .withdraw-card:hover * {
   color: #181A20 !important;
+}
+
+/* New styles for wallet list rows */
+.wallet-row {
+  background: transparent;
+}
+.wallet-row:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Back button focus */
+button:focus {
+  outline: 2px solid rgba(59,130,246,0.6);
 }
 </style>

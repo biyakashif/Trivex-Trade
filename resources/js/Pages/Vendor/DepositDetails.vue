@@ -1,8 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, router, usePage } from '@inertiajs/vue3';
 import { useCryptoStore } from '@/Store/crypto';
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { ClipboardDocumentListIcon } from '@heroicons/vue/24/solid'; // Import for history icon
 
 const props = defineProps({
@@ -17,6 +17,39 @@ const showHistory = ref(false);
 const history = ref([]);
 const historyError = ref(null); // State for history fetch error
 const successMessage = ref(null); // State for success message
+
+// Tabs and Swap state
+const activeTab = ref('receive');
+const toCrypto = ref('usdt');
+const fromAmount = ref('');
+const toAmount = ref('');
+
+onMounted(() => {
+  if (cryptoStore && cryptoStore.startAutoRefresh) {
+    cryptoStore.startAutoRefresh();
+  }
+  const symbols = ['usdt','btc','eth'].filter(s => s !== props.symbol);
+  toCrypto.value = symbols[0] || props.symbol;
+});
+
+const liveRate = computed(() => {
+  const fromPrice = Number(cryptoStore.getPrice(props.symbol)) || 0;
+  const toPrice = Number(cryptoStore.getPrice(toCrypto.value)) || 0;
+  if (fromPrice === 0 || toPrice === 0) return 0;
+  return fromPrice / toPrice;
+});
+
+const calculatedToAmount = computed(() => {
+  const amount = parseFloat(fromAmount.value) || 0;
+  const rate = liveRate.value;
+  const result = amount * rate;
+  const decimals = props.symbol === 'usdt' ? 2 : (props.symbol === 'btc' ? 8 : 4);
+  return isNaN(result) ? '' : result.toFixed(decimals);
+});
+
+const updateToAmount = () => {
+  toAmount.value = calculatedToAmount.value;
+};
 
 // Form setup for deposit submission
 const form = useForm({
@@ -101,6 +134,40 @@ const submitDeposit = () => {
     },
   });
 };
+
+// Send (USDT only) — reuse withdraw page submit route
+const sendForm = useForm({
+  wallet_address: '',
+  amount_withdraw: '',
+});
+
+// Try to read USDT coin id from globally provided props (same as Withdraw.vue)
+const page = usePage();
+const usdtCoinId = computed(() => {
+  const list = page?.props?.coinTypes || [];
+  const found = Array.isArray(list) ? list.find((c) => (c.symbol || '').toLowerCase() === 'usdt') : null;
+  return found?.id || '';
+});
+
+const performExchange = async () => {
+  const amount = parseFloat(fromAmount.value);
+  if (!amount || amount <= 0) return;
+  const convertedAmount = parseFloat(calculatedToAmount.value);
+  try {
+    await router.post(route('swap.perform'), {
+      from_crypto: props.symbol,
+      to_crypto: toCrypto.value,
+      from_amount: amount,
+      to_amount: convertedAmount,
+    }, { preserveState: true });
+    successMessage.value = 'Swap completed successfully!';
+    fromAmount.value = '';
+    toAmount.value = '';
+    setTimeout(() => successMessage.value = null, 2500);
+  } catch (e) {
+    // keep UI minimal per requirement
+  }
+};
 </script>
 
 <template>
@@ -127,50 +194,46 @@ const submitDeposit = () => {
             </button>
           </div>
 
+          <!-- Tabs (pill underline like screenshot) -->
+          <div class="flex space-x-6 text-sm border-b border-gray-800">
+            <button @click="activeTab='receive'" :class="['pb-2', activeTab==='receive' ? 'text-white border-b-2 border-blue-400' : 'text-gray-400']">Receive</button>
+            <button @click="activeTab='send'" :disabled="symbol!=='usdt'" :class="['pb-2', activeTab==='send' ? 'text-white border-b-2 border-blue-400' : 'text-gray-400', symbol!=='usdt' ? 'opacity-50 cursor-not-allowed' : '']">Send</button>
+            <button @click="activeTab='exchange'" :class="['pb-2', activeTab==='exchange' ? 'text-white border-b-2 border-blue-400' : 'text-gray-400']">Exchange</button>
+          </div>
+
           <!-- Success Message -->
           <div v-if="successMessage" class="mb-2 p-1 bg-green-900 text-green-200 rounded-md text-[10px] text-center border border-green-800">
             {{ successMessage }}
           </div>
 
-          <!-- Network -->
-          <div>
-            <label class="block text-[10px] font-medium text-gray-300 mb-1">Network</label>
-            <div class="relative">
-              <select
-                disabled
-                class="block w-full px-1 py-0.5 border border-gray-700 rounded-md bg-black text-[10px] text-white focus:outline-none"
-              >
-                <option>{{ depositDetails.network }}</option>
-              </select>
-              <div class="absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                <svg class="w-2 h-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+          <!-- RECEIVE: Network selector (pills) -->
+          <div v-if="activeTab==='receive'" class="space-y-3">
+            <div class="text-sm font-semibold text-white">Receiving assets</div>
+            <div class="flex space-x-3">
+              <button class="px-3 py-2 rounded-xl border text-sm"
+                :class="depositDetails.network?.toLowerCase().includes('erc') ? 'border-blue-400 text-white' : 'border-gray-700 text-gray-400'">
+                ERC20—{{ symbol.toUpperCase() }}
+              </button>
+              <button class="px-3 py-2 rounded-xl border text-sm"
+                :class="depositDetails.network?.toLowerCase().includes('trc') ? 'border-blue-400 text-white' : 'border-gray-700 text-gray-400'">
+                TRC20—{{ symbol.toUpperCase() }}
+              </button>
             </div>
           </div>
 
-          <!-- QR Code -->
-          <div class="flex justify-center">
+          <!-- RECEIVE: QR Code -->
+          <div v-if="activeTab==='receive'" class="flex justify-center py-2">
             <img
               :src="depositDetails.qr_code ? '/storage/' + depositDetails.qr_code : 'https://via.placeholder.com/100?text=No+QR+Code'"
               alt="QR Code"
-              class="w-24 h-24"
+              class="w-36 h-36"
             />
           </div>
 
-          <!-- Address -->
-          <div>
-            <label class="block text-[10px] font-medium text-gray-300 mb-1">Address</label>
-            <div class="flex items-center border border-gray-700 p-0.5 rounded-md bg-black">
-              <span class="text-[10px] text-white flex-1 break-all">{{ depositDetails.address }}</span>
-              <button
-                @click="copyAddress"
-                :class="['ml-1 px-1 py-0.5 text-white rounded-md text-[10px]', isCopied ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']"
-              >
-                {{ isCopied ? 'Copied!' : 'Copy' }}
-              </button>
-            </div>
+          <!-- RECEIVE: Address + Copy link -->
+          <div v-if="activeTab==='receive'" class="text-center">
+            <div class="text-xs text-white break-all">{{ depositDetails.address }}</div>
+            <button @click="copyAddress" class="text-blue-400 text-xs mt-1 hover:text-blue-300">{{ isCopied ? 'Copied!' : 'Copy address' }}</button>
             <div v-if="copyError" class="mt-1 text-[10px] text-red-400">
               {{ copyError }}
             </div>
@@ -182,8 +245,8 @@ const submitDeposit = () => {
             {{ depositDetails.warning }}
           </div> -->
 
-          <!-- Additional Details -->
-          <div class="text-[10px] space-y-1">
+          <!-- RECEIVE: Additional Details -->
+          <div v-if="activeTab==='receive'" class="text-[10px] space-y-1">
             <div class="flex justify-between">
               <label class="text-gray-400">Minimum deposit</label>
               <span class="text-white">{{ depositDetails.min_deposit }}</span>
@@ -206,37 +269,77 @@ const submitDeposit = () => {
             </div> -->
           </div>
 
-          <!-- Amount Input -->
-          <div>
-            <label class="block text-[10px] font-medium text-gray-300 mb-1">Amount</label>
-            <input
-              v-model="form.amount"
-              type="number"
-              step="any"
-              placeholder="Enter deposit amount"
-              class="block w-full px-1 py-0.5 border border-gray-700 rounded-md text-[10px] bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
+          <!-- RECEIVE: Amount Input (rounded with suffix) -->
+          <div v-if="activeTab==='receive'" class="space-y-2">
+            <div class="text-sm font-semibold text-white">Deposit amount</div>
+            <div class="flex items-center border border-gray-700 rounded-2xl px-3 py-2 bg-black">
+              <span class="mr-2 text-xs bg-gray-800 text-white rounded-full px-2 py-1">{{ symbol.toUpperCase() }}</span>
+              <input v-model="form.amount" type="number" step="any" placeholder="0" class="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder-gray-500" />
+              <span class="ml-2 text-gray-400 text-sm uppercase">{{ symbol }}</span>
+            </div>
           </div>
 
-          <!-- Upload Slip -->
-          <div>
-            <label class="block text-[10px] font-medium text-gray-300 mb-1">Upload Deposit Slip</label>
-            <input
-              type="file"
-              @change="form.slip = $event.target.files[0]"
-              accept="image/*"
-              class="block w-full text-[10px] text-white border border-gray-700 rounded-md px-1 py-0.5 bg-black file:mr-2 file:py-0.5 file:px-1 file:rounded-md file:border-0 file:bg-gray-700 file:text-white file:text-[10px] hover:file:bg-gray-600"
-            />
+          <!-- RECEIVE: Upload Slip (tile) -->
+          <div v-if="activeTab==='receive'" class="space-y-2">
+            <div class="text-sm font-semibold text-white">Deposit screenshot</div>
+            <label class="block w-28 h-28 border border-gray-700 rounded-lg flex items-center justify-center cursor-pointer bg-black hover:bg-gray-900">
+              <input type="file" class="hidden" accept="image/*" @change="form.slip = $event.target.files[0]" />
+              <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </label>
           </div>
 
-          <!-- Deposit Button -->
-          <button
+          <!-- RECEIVE: Submit -->
+          <button v-if="activeTab==='receive'"
             @click="submitDeposit"
             :disabled="form.processing"
-            class="w-full px-2 py-1 bg-white text-black rounded-md text-[10px] font-normal hover:bg-gray-100"
+            class="w-full px-4 py-3 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-500"
           >
-            Deposit
+            Submit
           </button>
+
+          <!-- SEND (USDT only) -->
+          <div v-if="activeTab==='send'" class="space-y-2">
+            <div v-if="symbol !== 'usdt'" class="text-[10px] text-gray-400">Send is available for USDT only.</div>
+            <!-- Mirror Withdraw.vue structure (crypto tab) so backend receives identical fields -->
+            <form v-else @submit.prevent="router.post(route('withdraw.store'), $event.target, { preserveState: true, preserveScroll: true })" class="space-y-2">
+              <!-- coin_id for USDT so backend identifies crypto -->
+              <input type="hidden" name="coin_id" :value="usdtCoinId" />
+              <input type="hidden" name="symbol" value="usdt" />
+              <div>
+                <label class="block text-[10px] font-medium text-gray-300 mb-1">Wallet Address</label>
+                <input name="wallet_address" v-model="sendForm.wallet_address" type="text" placeholder="Enter your wallet address" class="block w-full px-1 py-0.5 border border-gray-700 rounded-md text-[10px] bg-black text-white placeholder-gray-400 focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-medium text-gray-300 mb-1">Amount (USDT)</label>
+                <input name="amount_withdraw" v-model="sendForm.amount_withdraw" type="number" step="any" placeholder="Enter amount" class="block w-full px-1 py-0.5 border border-gray-700 rounded-md text-[10px] bg-black text-white placeholder-gray-400 focus:outline-none" />
+              </div>
+              <button type="submit" class="w-full px-4 py-3 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-500">Send</button>
+            </form>
+          </div>
+
+          <!-- EXCHANGE -->
+          <div v-if="activeTab==='exchange'" class="space-y-2">
+            <div>
+              <label class="block text-[10px] font-medium text-gray-300 mb-1">From</label>
+              <div class="flex items-center space-x-2">
+                <div class="text-[10px] text-white px-2 py-1 border border-gray-700 rounded-md uppercase">{{ symbol }}</div>
+                <input v-model="fromAmount" @input="updateToAmount" type="number" step="any" placeholder="Amount" class="w-full px-1 py-0.5 border border-gray-700 rounded-md text-[10px] bg-black text-white placeholder-gray-400 focus:outline-none" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-medium text-gray-300 mb-1">To</label>
+              <div class="flex items-center space-x-2">
+                <select v-model="toCrypto" @change="updateToAmount" class="px-2 py-1 border border-gray-700 rounded-md bg-black text-white text-[10px]">
+                  <option value="usdt" :disabled="symbol==='usdt'">USDT</option>
+                  <option value="btc" :disabled="symbol==='btc'">BTC</option>
+                  <option value="eth" :disabled="symbol==='eth'">ETH</option>
+                </select>
+                <input v-model="toAmount" readonly placeholder="Amount" class="w-full px-1 py-0.5 border border-gray-700 rounded-md text-[10px] bg-black text-white placeholder-gray-400 focus:outline-none" />
+              </div>
+            </div>
+            <div class="text-[10px] text-gray-300">Live Rate: 1 {{ symbol.toUpperCase() }} = {{ liveRate.toFixed(8) }} {{ toCrypto.toUpperCase() }}</div>
+            <button @click="performExchange" class="w-full px-4 py-3 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-500">Exchange</button>
+          </div>
         </div>
       </div>
     </div>
