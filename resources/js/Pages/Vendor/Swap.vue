@@ -258,3 +258,27 @@ const performSwap = async () => {
     </div>
   </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.bg-black {
+  background-color: #181A20 !important;
+}
+
+.text-white {
+  color: #fff !important;
+}
+
+button,
+button[type="submit"],
+button[type="button"] {
+  background: #23262F !important;
+  color: #fff !important;
+  transition: background 0.2s, color 0.2s;
+}
+button:hover,
+button[type="submit"]:hover,
+button[type="button"]:hover {
+  background: #f3f4f6 !important;
+  color: #181A20 !important;
+}
+</style>

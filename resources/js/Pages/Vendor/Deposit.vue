@@ -87,7 +87,7 @@ const goToWithdraw = () => {
             <!-- Swap Card -->
             <div
               @click="goToSwap"
-              class="relative bg-black rounded-xl shadow-md p-4 cursor-pointer hover:bg-gray-900 transition-transform duration-200 min-w-[200px] flex-1 flex items-center justify-between border border-gray-700"
+              class="relative bg-black rounded-xl shadow-md p-4 cursor-pointer hover:bg-gray-900 transition-transform duration-200 min-w-[200px] flex-1 flex items-center justify-between border border-gray-700 swap-card"
             >
               <ArrowsRightLeftIcon class="w-6 h-6 text-white mr-3" />
               <div class="text-white font-bold">Swap</div>
@@ -96,7 +96,7 @@ const goToWithdraw = () => {
             <!-- Withdraw Card -->
             <div
               @click="goToWithdraw"
-              class="relative bg-black rounded-xl shadow-md p-4 cursor-pointer hover:bg-gray-900 transition-transform duration-200 min-w-[200px] flex-1 flex items-center justify-between border border-gray-700"
+              class="relative bg-black rounded-xl shadow-md p-4 cursor-pointer hover:bg-gray-900 transition-transform duration-200 min-w-[200px] flex-1 flex items-center justify-between border border-gray-700 withdraw-card"
             >
               <ArrowDownCircleIcon class="w-6 h-6 text-white mr-3" />
               <div class="text-white font-bold">Withdraw</div>
@@ -107,3 +107,34 @@ const goToWithdraw = () => {
     </div>
   </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.bg-black {
+  background-color: #181A20 !important;
+}
+
+.text-white {
+  color: #fff !important;
+}
+
+/* Only update the background color for action cards/buttons, keep original shape/size */
+.actions-card,
+.swap-card,
+.withdraw-card {
+  background: #23262F !important;
+  color: #fff !important;
+}
+.actions-card:hover,
+.swap-card:hover,
+.withdraw-card:hover {
+  background: #f3f4f6 !important;
+  color: #181A20 !important;
+}
+
+/* Ensure text inside the card also changes color on hover */
+.actions-card:hover *,
+.swap-card:hover *,
+.withdraw-card:hover * {
+  color: #181A20 !important;
+}
+</style>

@@ -121,7 +121,7 @@ const submitForm = (event) => {
             <div class="text-right">
               <button
                 type="submit"
-                class="bg-indigo-600 text-white font-semibold text-sm py-2 px-6 rounded-full hover:bg-indigo-700 transition-all duration-200"
+                class="font-semibold text-sm py-2 px-6 rounded-full action-btn"
               >
                 Update
               </button>

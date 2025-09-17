@@ -92,7 +92,7 @@ onUnmounted(() => {
                   <td class="px-4 py-2 whitespace-nowrap">
                     <Link
                       :href="`/admin/update-wallet?user_id=${user.id}`"
-                      class="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                      class="px-3 py-1 rounded text-xs action-btn"
                     >
                       Update Wallet
                     </Link>
@@ -110,7 +110,7 @@ onUnmounted(() => {
             <button
               @click="fetchUsers(currentPage - 1)"
               :disabled="currentPage === 1"
-              class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              class="px-4 py-2 rounded action-btn disabled:opacity-50"
             >
               Previous
             </button>
@@ -118,7 +118,7 @@ onUnmounted(() => {
             <button
               @click="fetchUsers(currentPage + 1)"
               :disabled="currentPage === lastPage"
-              class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              class="px-4 py-2 rounded action-btn disabled:opacity-50"
             >
               Next
             </button>

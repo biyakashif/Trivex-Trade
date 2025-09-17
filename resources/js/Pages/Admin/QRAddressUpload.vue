@@ -237,7 +237,7 @@ const closeRecoveryModal = () => {
                         <!-- Submit Button -->
                         <button
                             type="submit"
-                            class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600"
+                            class="px-4 py-2 rounded-md text-sm action-btn"
                             :disabled="form.processing || !isAuthenticated"
                         >
                             Upload
@@ -291,7 +291,7 @@ const closeRecoveryModal = () => {
                     </div>
                     <button
                         type="submit"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600"
+                        class="px-4 py-2 rounded-md text-sm action-btn"
                         :disabled="securityForm.processing"
                     >
                         Setup Security
@@ -327,7 +327,7 @@ const closeRecoveryModal = () => {
                     <div class="flex justify-between">
                         <button
                             type="submit"
-                            class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600"
+                            class="px-4 py-2 rounded-md text-sm action-btn"
                             :disabled="passwordForm.processing"
                         >
                             Submit

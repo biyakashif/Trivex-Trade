@@ -47,20 +47,20 @@ const editWithdrawal = (id) => {
   <Head title="Withdrawals" />
   <AdminLayout>
     <template #header>
-      <h1 class="text-2xl font-bold text-gray-900">Withdrawals</h1>
+      <h1 class="text-2xl font-bold text-white">Withdrawals</h1>
     </template>
 
     <div class="py-6 px-4 sm:px-6 lg:px-8">
       <!-- Tabs Navigation -->
       <div class="mb-6">
-        <div class="flex space-x-2 bg-gray-200 p-1 rounded-full">
+        <div class="flex space-x-2 bg-transparent p-1 rounded-full">
           <button
             @click="setActiveTab('crypto')"
             :class="[
               'flex-1 py-2 px-4 rounded-full text-sm font-semibold transition-all duration-200',
               activeTab === 'crypto'
                 ? 'bg-indigo-600 text-white shadow-md'
-                : 'bg-transparent text-gray-700 hover:bg-indigo-100'
+                : 'bg-transparent text-gray-300 hover:bg-indigo-600/10'
             ]"
           >
             Crypto Withdrawals
@@ -71,7 +71,7 @@ const editWithdrawal = (id) => {
               'flex-1 py-2 px-4 rounded-full text-sm font-semibold transition-all duration-200',
               activeTab === 'bank'
                 ? 'bg-indigo-600 text-white shadow-md'
-                : 'bg-transparent text-gray-700 hover:bg-indigo-100'
+                : 'bg-transparent text-gray-300 hover:bg-indigo-600/10'
             ]"
           >
             Bank Withdrawals
@@ -81,15 +81,15 @@ const editWithdrawal = (id) => {
 
       <!-- Crypto Withdrawals -->
       <div v-if="activeTab === 'crypto'">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Crypto Withdrawals</h2>
+        <h2 class="text-xl font-semibold text-white mb-4">Crypto Withdrawals</h2>
         <div v-for="user in props.withdrawals" :key="user.id" class="space-y-3">
           <div v-if="user.withdraws.some(w => w.coin_id)">
-            <h3 class="text-base font-medium text-gray-800">{{ user.name }} ({{ user.email }})</h3>
+            <h3 class="text-base font-medium text-white">{{ user.name }} ({{ user.email }})</h3>
             <div class="space-y-3">
               <div
                 v-for="withdraw in user.withdraws.filter(w => w.coin_id)"
                 :key="withdraw.id"
-                class="bg-indigo-50 p-4 rounded-xl shadow-sm hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                class="withdraw-card p-4 rounded-xl shadow-sm hover:shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 <div class="flex justify-between items-center mb-2">
                   <span class="text-sm font-semibold text-indigo-700">
@@ -128,7 +128,7 @@ const editWithdrawal = (id) => {
                   </button>
                   <button
                     @click="editWithdrawal(withdraw.id)"
-                    class="flex-1 bg-indigo-500 text-white text-xs py-2 rounded-full hover:bg-indigo-600 transition-all duration-200"
+                    class="flex-1 action-btn text-xs py-2 rounded-full"
                   >
                     Edit
                   </button>
@@ -141,15 +141,15 @@ const editWithdrawal = (id) => {
 
       <!-- Bank Withdrawals -->
       <div v-if="activeTab === 'bank'">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Bank Withdrawals</h2>
+        <h2 class="text-xl font-semibold text-white mb-4">Bank Withdrawals</h2>
         <div v-for="user in props.withdrawals" :key="user.id" class="space-y-3">
           <div v-if="user.withdraws.some(w => !w.coin_id)">
-            <h3 class="text-base font-medium text-gray-800">{{ user.name }} ({{ user.email }})</h3>
+            <h3 class="text-base font-medium text-white">{{ user.name }} ({{ user.email }})</h3>
             <div class="space-y-3">
               <div
                 v-for="withdraw in user.withdraws.filter(w => !w.coin_id)"
                 :key="withdraw.id"
-                class="bg-teal-50 p-4 rounded-xl shadow-sm hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                class="withdraw-card p-4 rounded-xl shadow-sm hover:shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 <div class="flex justify-between items-center mb-2">
                   <span class="text-sm font-semibold text-teal-700">
@@ -190,7 +190,7 @@ const editWithdrawal = (id) => {
                   </button>
                   <button
                     @click="editWithdrawal(withdraw.id)"
-                    class="flex-1 bg-indigo-500 text-white text-xs py-2 rounded-full hover:bg-indigo-600 transition-all duration-200"
+                    class="flex-1 action-btn text-xs py-2 rounded-full"
                   >
                     Edit
                   </button>

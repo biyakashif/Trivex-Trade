@@ -249,7 +249,7 @@ const updateBalance = (crypto, action) => {
                 <div class="mt-2 flex space-x-2">
                   <button
                     @click="updateBalance('usdt', 'add')"
-                    class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                    class="px-3 py-1 rounded text-sm action-btn"
                   >
                     Update
                   </button>
@@ -276,7 +276,7 @@ const updateBalance = (crypto, action) => {
                 <div class="mt-2 flex space-x-2">
                   <button
                     @click="updateBalance('btc', 'add')"
-                    class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                    class="px-3 py-1 rounded text-sm action-btn"
                   >
                     Update
                   </button>
@@ -303,7 +303,7 @@ const updateBalance = (crypto, action) => {
                 <div class="mt-2 flex space-x-2">
                   <button
                     @click="updateBalance('eth', 'add')"
-                    class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                    class="px-3 py-1 rounded text-sm action-btn"
                   >
                     Update
                   </button>

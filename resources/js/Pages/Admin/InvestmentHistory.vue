@@ -96,7 +96,7 @@ const getTimeRemaining = (endsAt) => {
                     <td class="px-6 py-4 whitespace-nowrap">
                       <button
                         @click="viewInvestments(user.id)"
-                        class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                        class="px-3 py-1 rounded-md text-sm action-btn"
                       >
                         View Investments
                       </button>
