@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('role')->default('user');     // 👈 Role column
             $table->string('status')->default('inactive'); // 👈 Status column
+            $table->string('avatar')->nullable(); // 👈 Avatar column
             $table->rememberToken();
             $table->timestamps();
         });

@@ -2,16 +2,20 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { ArrowRightOnRectangleIcon, ChartBarIcon, WalletIcon, UserIcon, ArrowsRightLeftIcon } from '@heroicons/vue/24/solid';
 
 // Access the authenticated user
 const page = usePage();
 const user = page.props.auth.user;
 
-// Trade history reactive variables
-const showHistory = ref(false);
-const history = ref([]);
-const historyError = ref(null);
-const successMessage = ref(null);
+// Modal state
+const showAvatarModal = ref(false);
+
+// Avatar options
+const avatars = [
+  ...Array.from({ length: 6 }, (_, i) => ({ path: `/assets/avatar/boys/${i + 1}.jpg`, name: `Boy ${i + 1}` })),
+  ...Array.from({ length: 6 }, (_, i) => ({ path: `/assets/avatar/girls/${i + 1}.jpg`, name: `Girl ${i + 1}` })),
+];
 
 // Function to handle logout
 const logout = () => {
@@ -20,78 +24,38 @@ const logout = () => {
 
 // Functions to handle profile actions
 const editProfile = () => {
-  router.get(route('profile.edit'));
+  router.visit('/profile');
 };
 
-// Fetch trade history
-const fetchTradeHistory = async () => {
+// Function to select avatar
+const selectAvatar = async (avatarPath) => {
   try {
-    // Get CSRF token from meta tag
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    if (!csrfToken) {
-      historyError.value = 'CSRF token not found. Please refresh the page.';
-      showHistory.value = true;
-      return;
-    }
+    // Ensure CSRF cookie is set (for Laravel Sanctum or strict CSRF setups)
+    await fetch('/sanctum/csrf-cookie', { credentials: 'include' });
 
-    const response = await fetch('/trade/history', {
-      method: 'GET',
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const response = await fetch(route('profile.avatar'), {
+      method: 'POST',
       headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
+        'Content-Type': 'application/json',
         'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json',
       },
-      credentials: 'include', // Ensure session cookies are sent
-    });
-
-    console.log('Trade history response:', {
-      status: response.status,
-      headers: Object.fromEntries(response.headers.entries()),
+      body: JSON.stringify({ avatar: avatarPath }),
+      credentials: 'include',
     });
 
     if (!response.ok) {
-      const responseText = await response.text();
-      console.error('Fetch error:', response.status, responseText);
-      if (response.status === 401) {
-        historyError.value = 'Please log in to view trade history.';
-        router.visit(route('login'));
-        return;
-      } else if (response.status === 403) {
-        historyError.value = 'Please verify your email to view trade history.';
-        router.visit(route('verification.notice'));
-        return;
-      } else {
-        historyError.value = `Failed to load trade history: ${response.statusText}`;
-        showHistory.value = true;
-        return;
-      }
-    }
-
-    // Check if the response is JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      const responseText = await response.text();
-      console.error('Non-JSON response:', responseText);
-      historyError.value = 'Server returned invalid data. Please try again.';
-      showHistory.value = true;
+      const err = await response.json().catch(() => null);
+      console.error('Failed to update avatar', response.status, err);
       return;
     }
 
     const data = await response.json();
-    if (data.history) {
-      history.value = data.history;
-      historyError.value = null;
-      successMessage.value = 'Trade history loaded successfully.';
-      showHistory.value = true;
-    } else {
-      historyError.value = 'No trade history found.';
-      history.value = [];
-      showHistory.value = true;
-    }
+    user.avatar = data.avatar || avatarPath;
+    showAvatarModal.value = false;
   } catch (error) {
-    console.error('Error fetching trade history:', error);
-    historyError.value = 'Failed to load trade history. Please try again.';
-    showHistory.value = true;
+    console.error('Error updating avatar:', error);
   }
 };
 </script>
@@ -110,9 +74,21 @@ const fetchTradeHistory = async () => {
           <h2 class="text-base font-semibold mb-4 text-white">User Information</h2>
           <div class="space-y-4">
             <div class="flex items-center bg-gray-900 rounded-lg p-3">
-              <div class="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center mr-3">
-                <span class="text-white font-bold">{{ user.name.charAt(0) }}</span>
-              </div>
+              <img
+                v-if="user.avatar"
+                :src="user.avatar"
+                alt="User Avatar"
+                class="w-10 h-10 rounded-full mr-3 cursor-pointer"
+                @click="showAvatarModal = true"
+              />
+              <button
+                v-else
+                @click="showAvatarModal = true"
+                class="w-10 h-10 rounded-full mr-3 flex items-center justify-center bg-gray-800 text-gray-400 hover:bg-gray-700 focus:outline-none"
+                aria-label="Select avatar"
+              >
+                <UserIcon class="w-6 h-6" />
+              </button>
               <div class="flex-1">
                 <div class="text-sm font-medium text-white">{{ user.name }}</div>
                 <div class="text-xs text-gray-400">{{ user.email }}</div>
@@ -124,78 +100,92 @@ const fetchTradeHistory = async () => {
         <!-- Profile Actions Cards -->
         <div class="space-y-4">
           <div class="bg-black rounded-xl shadow-lg p-4 border border-gray-800">
-            <button
-              @click="editProfile"
-              class="w-full px-4 py-2 action-btn border border-gray-700 rounded-md text-sm font-medium transition-colors duration-200"
-            >
-              Edit Profile
-            </button>
-          </div>
-          <div class="bg-black rounded-xl shadow-lg p-4 border border-gray-800">
-            <button
-              @click="fetchTradeHistory"
-              class="w-full px-4 py-2 action-btn border border-gray-700 rounded-md text-sm font-medium transition-colors duration-200"
-            >
-              Trade History
-            </button>
+            <ul class="space-y-2">
+              <li>
+                <button
+                  @click="editProfile"
+                  class="w-full flex items-center px-4 py-3 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                >
+                  <UserIcon class="h-5 w-5 mr-3 text-gray-400" />
+                  <span class="text-sm font-medium">Edit Profile</span>
+                  <svg class="h-4 w-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </li>
+              <li>
+                <button
+                  @click="router.visit('/withdraw')"
+                  class="w-full flex items-center px-4 py-3 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                >
+                  <WalletIcon class="h-5 w-5 mr-3 text-gray-400" />
+                  <span class="text-sm font-medium">Withdraw</span>
+                  <svg class="h-4 w-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </li>
+              <li>
+                <button
+                  @click="router.visit('/trade')"
+                  class="w-full flex items-center px-4 py-3 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                >
+                  <ChartBarIcon class="h-5 w-5 mr-3 text-gray-400" />
+                  <span class="text-sm font-medium">Trade</span>
+                  <svg class="h-4 w-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </li>
+              <li>
+                <button
+                  @click="router.visit('/swap')"
+                  class="w-full flex items-center px-4 py-3 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                >
+                  <ArrowsRightLeftIcon class="h-5 w-5 mr-3 text-gray-400" />
+                  <span class="text-sm font-medium">Swap</span>
+                  <svg class="h-4 w-4 ml-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </li>
+            </ul>
           </div>
           <div class="bg-black rounded-xl shadow-lg p-4 border border-gray-800">
             <button
               @click="logout"
-              class="w-full px-4 py-2 action-btn border border-gray-700 rounded-md text-sm font-medium transition-colors duration-200"
+              class="w-full flex items-center px-4 py-3 text-left text-red-400 hover:bg-red-900 hover:text-white rounded-lg transition-colors duration-200"
             >
-              Logout
+              <ArrowRightOnRectangleIcon class="h-5 w-5 mr-3" />
+              <span class="text-sm font-medium">Logout</span>
+              <svg class="h-4 w-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- History Modal -->
-    <div v-if="showHistory" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-      <div class="bg-black rounded-lg p-3 w-11/12 max-w-sm max-h-[80vh] overflow-y-auto border border-gray-800 text-white">
-        <div class="flex justify-between items-center mb-3">
-          <h2 class="text-base font-semibold text-white">Trade History</h2>
-          <button @click="showHistory = false" class="text-blue-400 hover:text-blue-600">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <!-- Show success message in history modal if open -->
-        <div v-if="successMessage" class="mb-2 p-1 bg-green-900 text-green-400 rounded-md text-[10px] text-center">
-          {{ successMessage }}
-        </div>
-        <div v-if="historyError" class="mb-2 p-1 bg-red-900 text-red-400 rounded-md text-[10px] text-center">
-          {{ historyError }}
-        </div>
-        <div v-else-if="history.length === 0" class="text-gray-400 text-[10px] text-center">
-          No trade history available.
-        </div>
-        <div v-else class="space-y-2">
-          <div v-for="trade in history" :key="trade.id" class="border border-gray-700 rounded-md p-2 text-[10px] bg-gray-900">
-            <div class="flex justify-between">
-              <span class="text-white font-medium">{{ trade.symbol.toUpperCase() }}</span>
-              <span :class="{
-                'text-yellow-400': trade.status === 'pending',
-                'text-green-400': trade.status === 'completed',
-                'text-red-400': trade.status === 'loss' || trade.status === 'rejected'
-              }">
-                {{ trade.status.charAt(0).toUpperCase() + trade.status.slice(1) }}
-              </span>
-            </div>
-            <div class="flex justify-between mt-1">
-              <span class="text-gray-400">Amount</span>
-              <span class="text-white">{{ trade.trade_amount }} {{ trade.symbol.toUpperCase() }}</span>
-            </div>
-            <div class="flex justify-between mt-1">
-              <span class="text-gray-400">Profit</span>
-              <span class="text-white">{{ trade.profit_earned ?? 0 }} {{ trade.symbol.toUpperCase() }}</span>
-            </div>
-            <div class="flex justify-between mt-1">
-              <span class="text-gray-400">Date</span>
-              <span class="text-white">{{ new Date(trade.created_at).toLocaleString() }}</span>
-            </div>
+      <!-- Avatar Selection Modal -->
+      <div v-if="showAvatarModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-gray-900 rounded-lg p-6 w-11/12 max-w-md max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-white">Select Avatar</h2>
+            <button @click="showAvatarModal = false" class="text-gray-400 hover:text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <img
+              v-for="avatar in avatars"
+              :key="avatar.path"
+              :src="avatar.path"
+              :alt="avatar.name"
+              class="w-16 h-16 rounded-full cursor-pointer border-2 border-transparent hover:border-blue-500 transition"
+              @click="selectAvatar(avatar.path)"
+            />
           </div>
         </div>
       </div>
@@ -210,18 +200,5 @@ const fetchTradeHistory = async () => {
 
 .text-white {
   color: #fff !important;
-}
-
-/* Action button style (dark -> light on hover) */
-.action-btn {
-  background: #23262F !important;
-  color: #fff !important;
-}
-.action-btn:hover {
-  background: #f3f4f6 !important;
-  color: #181A20 !important;
-}
-.action-btn:hover * {
-  color: #181A20 !important;
 }
 </style>

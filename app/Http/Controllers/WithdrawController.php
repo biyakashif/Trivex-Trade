@@ -49,6 +49,9 @@ class WithdrawController extends Controller
         $balance = Balance::where('user_id', $user->id)->first();
 
         if (!$balance) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['error' => 'Balance record not found.'], 400);
+            }
             return redirect()->back()->with('error', 'Balance record not found.');
         }
 
@@ -65,6 +68,9 @@ class WithdrawController extends Controller
             $balanceKey = $symbol . '_balance';
 
             if ($balance->$balanceKey < $validated['amount_withdraw']) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['error' => 'Insufficient balance for this withdrawal.'], 400);
+                }
                 return redirect()->back()->with('error', 'Insufficient balance for this withdrawal.');
             }
 
@@ -88,6 +94,9 @@ class WithdrawController extends Controller
 
             // For bank withdrawals, we'll assume the amount is in USDT
             if ($balance->usdt_balance < $validated['bank_withdraw_amount']) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json(['error' => 'Insufficient USDT balance for this withdrawal.'], 400);
+                }
                 return redirect()->back()->with('error', 'Insufficient USDT balance for this withdrawal.');
             }
 
@@ -101,6 +110,54 @@ class WithdrawController extends Controller
             ]);
         }
 
+        // Return appropriate response based on request type
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'Withdrawal request submitted successfully. Awaiting admin approval.',
+                'success' => true
+            ]);
+        }
+
         return redirect()->route('withdraw')->with('success', 'Withdrawal request submitted successfully. Awaiting admin approval.');
+    }
+
+    public function history(Request $request)
+    {
+        $symbol = $request->query('symbol');
+
+        // Find the coin type by symbol
+        $coinType = CoinType::where('symbol', $symbol)->first();
+
+        if (!$coinType) {
+            return response()->json(['withdrawals' => []]);
+        }
+
+        $withdrawals = Withdraw::where('user_id', Auth::id())
+            ->where('coin_id', $coinType->id)
+            ->with('coinType')
+            ->orderBy('created_at', 'desc')
+            ->get([
+                'amount_withdraw',
+                'status',
+                'crypto_wallet',
+                'created_at',
+                'coin_id'
+            ]);
+
+        // Format the data to match the frontend expectations
+        $formattedWithdrawals = $withdrawals->map(function ($withdrawal) {
+            return [
+                'id' => $withdrawal->id,
+                'symbol' => $withdrawal->coinType->symbol,
+                'amount' => $withdrawal->amount_withdraw,
+                'status' => $withdrawal->status,
+                'wallet_address' => $withdrawal->crypto_wallet,
+                'created_at' => $withdrawal->created_at,
+            ];
+        });
+
+        return response()->json([
+            'withdrawals' => $formattedWithdrawals,
+        ]);
     }
 }

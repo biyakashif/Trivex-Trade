@@ -3,8 +3,7 @@ import '../css/components.css';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
-import { ZiggyVue } from 'ziggy-js';
-import { Ziggy } from './ziggy';
+import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { createPinia } from 'pinia';
 
 const pinia = createPinia();
@@ -21,7 +20,7 @@ createInertiaApp({
         const app = createApp({ render: () => h(App, props) });
         app.use(pinia);
         app.use(plugin);
-    app.use(ZiggyVue, Ziggy);
+        app.use(ZiggyVue);
         app.mount(el);
     },
     progress: {

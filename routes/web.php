@@ -100,6 +100,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/withdraw', [WithdrawController::class, 'index'])->name('withdraw');
     Route::post('/withdraw/store', [WithdrawController::class, 'store'])->name('withdraw.store');
+    Route::get('/withdraw/history', [WithdrawController::class, 'history'])->name('withdraw.history');
 
     Route::get('/investment', [InvestmentController::class, 'index'])->name('investment');
     Route::post('/investment/store', [InvestmentController::class, 'store'])->name('investment.store');
@@ -185,6 +186,7 @@ Route::middleware(['auth', 'verified', 'admin'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

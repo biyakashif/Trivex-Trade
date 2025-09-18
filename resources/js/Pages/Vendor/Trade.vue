@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useCryptoStore } from '@/Store/crypto.js';
-import { ClipboardDocumentListIcon } from '@heroicons/vue/24/solid';
+import { ClipboardDocumentListIcon, ArrowLeftIcon } from '@heroicons/vue/24/solid';
 
 // Crypto store for managing crypto data
 const cryptoStore = useCryptoStore();
@@ -43,6 +43,11 @@ const displayedCryptoData = computed(() => {
 function goToTradeView(symbol) {
   router.visit(route('vendor.trade.view', { symbol: symbol.toLowerCase() }));
 }
+
+// Go back in history
+const goBack = () => {
+  window.history.back();
+};
 
 // Fetch trade history
 async function fetchTradeHistory() {
@@ -137,13 +142,12 @@ onUnmounted(() => {
   <Head title="Trade" />
 
   <AuthenticatedLayout>
-    <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Trade
-      </h2>
-    </template>
+    <button @click="goBack" class="flex items-center space-x-2 text-white mb-4 hover:text-gray-300">
+      <ArrowLeftIcon class="h-5 w-5" />
+      <span>Back</span>
+    </button>
 
-    <div class="text-gray-900">
+    <div class="text-gray-900 pt-4">
       <!-- Crypto Table: Mobile (<lg) -->
       <div class="lg:hidden px-4 pt-4">
         <div class="space-y-6">

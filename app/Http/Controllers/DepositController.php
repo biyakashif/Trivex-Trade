@@ -36,49 +36,44 @@ class DepositController extends Controller
             abort(404, 'Cryptocurrency not found');
         }
 
+        // Fetch the logged-in user's balances
+        $balance = Balance::where('user_id', Auth::id())->first();
+
+        // Prepare balances to pass to the frontend (default to 0 if no record exists)
+        $balances = [
+            'usdt_balance' => $balance ? $balance->usdt_balance : 0,
+            'btc_balance' => $balance ? $balance->btc_balance : 0,
+            'eth_balance' => $balance ? $balance->eth_balance : 0,
+        ];
+
         // Static data for each cryptocurrency
         $details = [
             'usdt' => [
                 'network' => 'Tron(TRC20)',
                 'warning' => 'Ends with qW42ifz',
-                'min_deposit' => '0.00000001 USDT',
-                'deposit_account' => 'Trading',
-                'deposit_arrival_time' => '~1 minutes',
-                'withdraw_enabled_time' => '~2 minutes',
-                // 'contract_address' => 'Ends with gIJ6t',
             ],
             'eth' => [
                 'network' => 'Ethereum',
                 'warning' => 'Ends with 4204179a14de91',
-                'min_deposit' => '0.001 ETH',
-                'deposit_account' => 'Trading',
-                'deposit_arrival_time' => '~7 minutes',
-                'withdraw_enabled_time' => '~20 minutes',
-                // 'contract_address' => null,
             ],
             'btc' => [
                 'network' => 'Bitcoin',
                 'warning' => 'ONLY use this address to deposit BTC. Please don\'t deposit inscriptions, NFTs, or any other non-BTC assets, as they can\'t be credited or returned.',
-                'min_deposit' => '0.00003 BTC',
-                'deposit_account' => 'Trading',
-                'deposit_arrival_time' => '~18 minutes',
-                'withdraw_enabled_time' => '~27 minutes',
-                // 'contract_address' => null,
             ],
         ];
 
+        // Get coin types for withdrawal
+        $coinTypes = \App\Models\CoinType::all();
+
         return Inertia::render('Vendor/DepositDetails', [
             'symbol' => $symbol,
+            'balances' => $balances,
+            'coinTypes' => $coinTypes,
             'depositDetails' => [
                 'qr_code' => $depositDetail->qr_code,
                 'address' => $depositDetail->address,
                 'network' => $details[$symbol]['network'],
                 'warning' => $details[$symbol]['warning'],
-                'min_deposit' => $details[$symbol]['min_deposit'],
-                'deposit_account' => $details[$symbol]['deposit_account'],
-                'deposit_arrival_time' => $details[$symbol]['deposit_arrival_time'],
-                'withdraw_enabled_time' => $details[$symbol]['withdraw_enabled_time'],
-                // 'contract_address' => $details[$symbol]['contract_address'],
             ],
         ]);
     }

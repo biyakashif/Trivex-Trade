@@ -288,15 +288,26 @@ const strokeDashoffset = computed(() => {
   const progress = timeLeft.value / initialTime.value;
   return circumference * (1 - progress);
 });
+
+// Computed property to detect large screens
+const $screenIsLarge = computed(() => window.innerWidth >= 1024);
 </script>
 
 <template>
   <Head :title="`${currentSymbol.toUpperCase()} Trade`" />
   <AuthenticatedLayout>
     <template #header></template>
-  <div class="h-screen flex flex-col bg-[#181A20]">
-      <div class="flex flex-col flex-1 max-w-4xl mx-auto w-full px-2 sm:px-4 lg:px-6">
-  <div class="bg-[#181A20] rounded-lg shadow flex flex-col flex-1 overflow-hidden border border-gray-800">
+    <div class="h-screen flex flex-col bg-[#181A20]">
+      <!-- Responsive wrapper: full screen for large screens, original for small screens -->
+      <div
+        class="flex flex-col flex-1 w-full px-2 sm:px-4 lg:px-6"
+        :class="{'max-w-4xl mx-auto': !$screenIsLarge}"
+        style="height: 100vh;"
+      >
+        <div
+          class="bg-[#181A20] rounded-lg shadow flex flex-col flex-1 overflow-hidden border border-gray-800"
+          style="height: 100%;"
+        >
           <div class="p-6 sm:p-6 flex flex-col flex-1 text-white">
             <div class="flex justify-between items-center mb-2">
               <div>
@@ -340,7 +351,7 @@ const strokeDashoffset = computed(() => {
                 </div>
                 <div class="flex items-center space-x-2">
                   <span class="text-base sm:text-lg font-bold text-white">
-                    US$ {{ currentPrice }}
+                    USTD {{ currentPrice }}
                   </span>
                   <span :class="priceChange.includes('-') ? 'text-red-500' : 'text-green-400'" class="text-xs sm:text-sm">
                     {{ priceChange }}
@@ -378,7 +389,7 @@ const strokeDashoffset = computed(() => {
                   <span class="text-xs sm:text-sm">24 hours</span>
                 </div>
                 <div class="text-white font-medium text-xs sm:text-base">
-                  US$ {{ volume }}
+                  USTD {{ volume }}
                 </div>
               </div>
               <div class="flex items-center justify-between">
@@ -387,7 +398,7 @@ const strokeDashoffset = computed(() => {
                   <span class="text-xs sm:text-sm">24-hour transaction</span>
                 </div>
                 <div class="text-white font-medium text-xs sm:text-base">
-                  US$ {{ currentPrice }}
+                  USTD {{ currentPrice }}
                 </div>
               </div>
             </div>
@@ -402,7 +413,7 @@ const strokeDashoffset = computed(() => {
           </div>
         </div>
       </div>
-    </div>
+  </div>
 
     <!-- Order Form Modal -->
     <div v-if="showOrderForm" class="fixed inset-0 bg-[#181A20] bg-opacity-95 flex items-center justify-center z-50">
@@ -545,7 +556,7 @@ const strokeDashoffset = computed(() => {
 
     <!-- Trade Result Modal -->
     <div v-if="showResultModal" class="fixed inset-0 bg-[#181A20] bg-opacity-95 flex items-center justify-center z-50 px-2">
-  <div class="bg-[#23262F] rounded-xl shadow-md w-full max-w-sm sm:max-w-md p-4 sm:p-6 relative border border-gray-800 overflow-hidden">
+      <div class="bg-[#23262F] rounded-xl shadow-md w-full max-w-sm sm:max-w-md p-4 sm:p-6 relative border border-gray-800 overflow-hidden">
         <!-- Subtle dark gradient from bottom-right to center -->
         <svg class="absolute -bottom-16 -right-16 w-[48rem] h-[48rem] pointer-events-none select-none z-0" viewBox="0 0 800 800" fill="none">
           <defs>
@@ -767,10 +778,12 @@ const strokeDashoffset = computed(() => {
     transform: scale(1.05);
   }
 }
-</style>
 
 /* Custom bent/cut bottom-right corner for trade details card */
 .bent-card {
   position: relative;
   overflow: hidden;
 }
+
+
+</style>

@@ -2,7 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { ChartBarIcon, ClipboardIcon } from '@heroicons/vue/24/solid';
+import { ChartBarIcon, ClipboardIcon, ArrowLeftIcon } from '@heroicons/vue/24/solid';
 
 const props = defineProps({
   balances: {
@@ -56,16 +56,22 @@ const copyHistoryToClipboard = () => {
     console.error('Failed to copy history:', err);
   });
 };
+
+// Go back in history
+const goBack = () => {
+  window.history.back();
+};
 </script>
 
 <template>
   <Head title="Withdraw" />
   <AuthenticatedLayout>
-    <template #header>
-      <h1 class="text-2xl py-3 font-bold text-white text-center">Withdraw</h1>
-    </template>
+    <button @click="goBack" class="flex items-center space-x-2 text-white mb-4 hover:text-gray-300">
+      <ArrowLeftIcon class="h-5 w-5" />
+      <span>Back</span>
+    </button>
 
-    <div class="bg-black flex flex-col sm:min-h-screen h-[calc(100vh-4rem)] sm:h-auto">
+    <div class="pt-4 bg-black flex flex-col sm:min-h-screen h-[calc(100vh-4rem)] sm:h-auto">
       <!-- Fixed Tabs Navigation -->
       <div class="bg-black shadow-md sticky top-0 z-10 border-b border-gray-800">
         <ul class="flex justify-around items-center p-2">

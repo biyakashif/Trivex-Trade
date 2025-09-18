@@ -41,6 +41,27 @@ class ProfileController extends Controller
     }
 
     /**
+     * Update just the user's avatar via a JSON API endpoint.
+     * This endpoint intentionally returns JSON and is not intended to be
+     * used as an Inertia request.
+     */
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => ['required', 'string', 'max:255'],
+        ]);
+
+        $user = $request->user();
+        $user->avatar = $request->input('avatar');
+        $user->save();
+
+        return response()->json([
+            'message' => 'Avatar updated.',
+            'avatar' => $user->avatar,
+        ]);
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse

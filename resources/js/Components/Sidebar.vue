@@ -8,8 +8,21 @@
   >
     <!-- User Info Box -->
     <div class="px-6 py-4 mb-6">
-      <div class="bg-gray-900 text-white p-4 rounded-xl shadow-md text-center border border-gray-800">
+      <div class="bg-gray-900 text-white p-4 rounded-xl shadow-md text-center border border-gray-800 flex flex-col items-center">
+        <img
+          v-if="user && user.avatar"
+          :src="getAvatarUrl(user.avatar)"
+          alt="User Avatar"
+          class="w-16 h-16 rounded-full mb-3 object-cover"
+        />
+        <div
+          v-else
+          class="w-16 h-16 rounded-full mb-3 flex items-center justify-center bg-gray-800 text-gray-400"
+        >
+          <UserIcon class="w-10 h-10" />
+        </div>
         <h6 class="text-lg font-semibold tracking-wide">{{ user?.name }}</h6>
+        <div class="text-xs text-gray-400 mt-1 break-words max-w-full">{{ user?.email }}</div>
       </div>
     </div>
 
@@ -56,13 +69,28 @@
 </template>
 
 <script setup>
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { HomeIcon, ChartBarIcon, CurrencyDollarIcon, ArrowUpIcon, UserIcon } from '@heroicons/vue/24/solid';
 
 defineProps({
   sidebarOpen: Boolean,
-  user: Object,
 });
+
+// Read the authenticated user directly from Inertia page props so the sidebar
+// always shows the latest values saved in the database (auth.user).
+const page = usePage();
+const user = page.props.auth.user;
+
+
+function getAvatarUrl(avatar) {
+  if (!avatar) return '/assets/avatar/boys/1.jpg';
+  // If avatar is already a full URL (http/https), return as is
+  if (/^https?:\/\//.test(avatar)) return avatar;
+  // If avatar is already an absolute path (starts with /storage or /assets), return as is
+  if (avatar.startsWith('/storage') || avatar.startsWith('/assets')) return avatar;
+  // Otherwise, assume it's a filename and prefix with /storage/avatars/
+  return `/storage/avatars/${avatar}`;
+}
 
 const menu = [
   { label: 'Home', href: '/dashboard', icon: HomeIcon },

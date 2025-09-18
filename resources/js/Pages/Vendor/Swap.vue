@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
 import { useCryptoStore } from '@/Store/crypto';
 import { formatBalance } from '@/utils/formatBalance';
+import { ArrowLeftIcon } from '@heroicons/vue/24/solid';
 
 // Access the crypto store
 const cryptoStore = useCryptoStore();
@@ -140,15 +141,22 @@ const performSwap = async () => {
     errorMessage.value = 'An error occurred during the swap.';
   }
 };
+
+// Go back in history
+const goBack = () => {
+  window.history.back();
+};
 </script>
 
 <template>
   <Head title="Swap" />
   <AuthenticatedLayout>
-    <template #header>
-    </template>
+    <button @click="goBack" class="flex items-center space-x-2 text-white mb-4 hover:text-gray-300">
+      <ArrowLeftIcon class="h-5 w-5" />
+      <span>Back</span>
+    </button>
 
-    <div class="py-6 bg-black min-h-screen">
+    <div class="pt-4 py-6 bg-black min-h-screen">
       <div class="max-w-lg lg:max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div class="bg-black overflow-hidden rounded-xl shadow-lg p-6 border border-gray-800">

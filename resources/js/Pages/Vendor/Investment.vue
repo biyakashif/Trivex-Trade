@@ -2,7 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
-import { ArrowUpIcon } from '@heroicons/vue/24/solid';
+import { ArrowUpIcon, ArrowLeftIcon } from '@heroicons/vue/24/solid';
 
 const { props } = usePage();
 const usdtBalance = ref(props.usdt_balance || 0);
@@ -10,6 +10,7 @@ const activeInvestments = ref(props.active_investments || []);
 const selectedPlan = ref(null);
 const investmentAmount = ref('');
 const errorMessage = ref('');
+const successMessage = ref('');
 const showForm = ref(false);
 
 // Investment plans
@@ -50,6 +51,7 @@ const getTimeRemaining = (endsAt) => {
 // Start an investment
 const startInvestment = async () => {
   errorMessage.value = '';
+  successMessage.value = '';
 
   try {
     const response = await fetch('/investment/store', {
@@ -72,12 +74,20 @@ const startInvestment = async () => {
       throw new Error(data.error || 'Failed to start investment');
     }
 
+    // Show success message
+    successMessage.value = 'Investment started successfully!';
+
     // Update balance and active investments
     usdtBalance.value -= parseFloat(investmentAmount.value);
     activeInvestments.value.unshift(data.investment);
     showForm.value = false;
     selectedPlan.value = null;
     investmentAmount.value = '';
+
+    // Clear success message after 5 seconds
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 5000);
   } catch (error) {
     errorMessage.value = error.message;
   }
@@ -103,18 +113,24 @@ onMounted(() => {
   updateActiveInvestments();
   setInterval(updateActiveInvestments, 60000); // Check every minute
 });
+
+// Go back in history
+const goBack = () => {
+  window.history.back();
+};
 </script>
 
 <template>
   <Head title="Grow Your Investment" />
 
   <AuthenticatedLayout>
-    <template #header>
+    <button @click="goBack" class="flex items-center space-x-2 text-white mb-4 hover:text-gray-300">
+      <ArrowLeftIcon class="h-5 w-5" />
+      <span>Back</span>
+    </button>
 
-    </template>
-
-    <div class="max-w-2xl mx-auto py-6 px-4 sm:max-w-full sm:px-6 lg:px-8">
-      <div class="flex items-center justify-center space-x-2 pt-4">
+    <div class="max-w-2xl mx-auto pt-4 py-6 px-4 sm:max-w-full sm:px-6 lg:px-8">
+      <div class="flex items-center justify-center space-x-2">
         <ArrowUpIcon class="h-6 w-6 text-green-400" />
         <h2 class="text-2xl py-3 font-bold text-white">
           Grow Your Investment
@@ -163,8 +179,14 @@ onMounted(() => {
           <p>{{ errorMessage }}</p>
         </div>
 
+        <!-- Success Message -->
+        <div v-if="successMessage" class="bg-green-900 border-l-4 border-green-500 text-green-200 p-4 mb-4 rounded-r-lg sm:p-3 sm:text-sm">
+          <p>{{ successMessage }}</p>
+        </div>
+
         <!-- Start Investment Button -->
         <button
+          v-if="!showForm"
           @click="showForm = true"
           class="w-full action-btn font-normal py-1 rounded-lg shadow-md transition duration-300 mb-6 sm:py-0.5 sm:text-sm border border-gray-300"
         >
