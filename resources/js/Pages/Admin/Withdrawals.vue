@@ -98,7 +98,7 @@ const editWithdrawal = (id) => {
                   <span
                     :class="[
                       'px-2 py-1 rounded-full text-xs font-medium',
-                      withdraw.status === 'pending' ? 'bg-yellow-200 text-yellow-800' :
+                      withdraw.status === 'pending' || withdraw.status === 'Under Review' ? 'bg-yellow-200 text-yellow-800' :
                       withdraw.status === 'approved' ? 'bg-green-200 text-green-800' :
                       'bg-red-200 text-red-800'
                     ]"
@@ -113,14 +113,14 @@ const editWithdrawal = (id) => {
                 </div>
                 <div class="mt-3 flex space-x-2">
                   <button
-                    v-if="withdraw.status === 'pending'"
+                    v-if="withdraw.status === 'Under Review'"
                     @click="approveWithdrawal(withdraw.id)"
                     class="flex-1 bg-green-500 text-white text-xs py-2 rounded-full hover:bg-green-600 transition-all duration-200"
                   >
                     Approve
                   </button>
                   <button
-                    v-if="withdraw.status === 'pending'"
+                    v-if="withdraw.status === 'Under Review'"
                     @click="rejectWithdrawal(withdraw.id)"
                     class="flex-1 bg-red-500 text-white text-xs py-2 rounded-full hover:bg-red-600 transition-all duration-200"
                   >
@@ -158,7 +158,7 @@ const editWithdrawal = (id) => {
                   <span
                     :class="[
                       'px-2 py-1 rounded-full text-xs font-medium',
-                      withdraw.status === 'pending' ? 'bg-yellow-200 text-yellow-800' :
+                      withdraw.status === 'pending' || withdraw.status === 'Under Review' ? 'bg-yellow-200 text-yellow-800' :
                       withdraw.status === 'approved' ? 'bg-green-200 text-green-800' :
                       'bg-red-200 text-red-800'
                     ]"
@@ -175,14 +175,14 @@ const editWithdrawal = (id) => {
                 </div>
                 <div class="mt-3 flex space-x-2">
                   <button
-                    v-if="withdraw.status === 'pending'"
+                    v-if="withdraw.status === 'Under Review'"
                     @click="approveWithdrawal(withdraw.id)"
                     class="flex-1 bg-green-500 text-white text-xs py-2 rounded-full hover:bg-green-600 transition-all duration-200"
                   >
                     Approve
                   </button>
                   <button
-                    v-if="withdraw.status === 'pending'"
+                    v-if="withdraw.status === 'Under Review'"
                     @click="rejectWithdrawal(withdraw.id)"
                     class="flex-1 bg-red-500 text-white text-xs py-2 rounded-full hover:bg-red-600 transition-all duration-200"
                   >

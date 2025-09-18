@@ -308,8 +308,8 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
           class="bg-[#181A20] rounded-lg shadow flex flex-col flex-1 overflow-hidden border border-gray-800"
           style="height: 100%;"
         >
-          <div class="p-6 sm:p-6 flex flex-col flex-1 text-white">
-            <div class="flex justify-between items-center mb-2">
+          <div class="p-2 sm:p-4 flex flex-col flex-1 text-white">
+            <div class="flex justify-between items-center mb-1 sm:mb-2">
               <div>
                 <!-- Custom listbox dropdown with icons and /USDT suffix -->
                 <div class="relative mt-1">
@@ -321,9 +321,9 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
                     :aria-expanded="dropdownOpen ? 'true' : 'false'"
                   >
                     <div class="flex items-center space-x-2">
-                      <img :src="cryptoStore.getIcon((currentSymbol.value||'BTC').toLowerCase()) || 'https://via.placeholder.com/24'" :alt="currentSymbol" class="h-6 w-6 rounded-full" />
-                      <span class="font-semibold">{{ currentSymbol.toUpperCase() }}</span>
-                      <span class="text-gray-400">/USDT</span>
+                      <img :src="cryptoStore.getIcon((currentSymbol.value||'BTC').toLowerCase()) || 'https://via.placeholder.com/24'" :alt="currentSymbol" class="h-5 w-5 sm:h-6 sm:w-6 rounded-full" />
+                      <span class="font-semibold text-sm sm:text-base">{{ currentSymbol.toUpperCase() }}</span>
+                      <span class="text-gray-400 text-xs sm:text-sm">/USDT</span>
                     </div>
                     <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -341,26 +341,26 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
                       :key="coin.symbol"
                       role="option"
                       @click="selectCoin(coin.symbol)"
-                      class="flex items-center px-3 py-2 hover:bg-[#f3f4f6] hover:text-[#181A20] cursor-pointer text-white transition-colors"
+                      class="flex items-center px-2 sm:px-3 py-1 sm:py-2 hover:bg-[#f3f4f6] hover:text-[#181A20] cursor-pointer text-white transition-colors"
                     >
-                      <img :src="coin.icon || 'https://via.placeholder.com/24'" class="h-5 w-5 rounded-full mr-3" :alt="coin.symbol" />
-                      <span class="flex-1">{{ coin.symbol }}</span>
-                      <span class="text-gray-400">/USDT</span>
+                      <img :src="coin.icon || 'https://via.placeholder.com/24'" class="h-4 w-4 sm:h-5 sm:w-5 rounded-full mr-2 sm:mr-3" :alt="coin.symbol" />
+                      <span class="flex-1 text-sm sm:text-base">{{ coin.symbol }}</span>
+                      <span class="text-gray-400 text-xs sm:text-sm">/USDT</span>
                     </li>
                   </ul>
                 </div>
                 <div class="flex items-center space-x-2">
-                  <span class="text-base sm:text-lg font-bold text-white">
+                  <span class="text-sm sm:text-base font-bold text-white">
                     USTD {{ currentPrice }}
                   </span>
-                  <span :class="priceChange.includes('-') ? 'text-red-500' : 'text-green-400'" class="text-xs sm:text-sm">
+                  <span :class="priceChange.includes('-') ? 'text-red-500' : 'text-green-400'" class="text-[10px] sm:text-xs">
                     {{ priceChange }}
                   </span>
                 </div>
               </div>
             </div>
-            <div class="w-full flex-1 mb-6 flex flex-col">
-              <div class="flex-1 flex">
+            <div class="w-full mb-3 sm:mb-6 flex flex-col">
+              <div class="h-64 sm:h-80 md:h-96 lg:h-[24rem] flex">
                 <iframe
                   id="tradingview_chart"
                   :src="widgetUrl"
@@ -373,31 +373,31 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
               </div>
             </div>
             <div class="bg-[#23262F] rounded-lg p-2 sm:p-4 mb-2 sm:mb-4 shadow-sm border border-gray-800">
-              <h4 class="text-sm sm:text-base font-semibold text-white mb-2 sm:mb-3">Market Statistics</h4>
+              <h4 class="text-xs sm:text-sm font-semibold text-white mb-1 sm:mb-2">Market Statistics</h4>
               <div class="flex items-center justify-between mb-1 sm:mb-2">
                 <div class="flex items-center space-x-1 sm:space-x-2 text-white">
-                  <span class="text-xs sm:text-sm">Market Outlook</span>
+                  <span class="text-[10px] sm:text-xs">Market Outlook</span>
                 </div>
                 <div class="flex space-x-1 sm:space-x-3">
-                  <span class="text-green-400 font-semibold text-xs sm:text-base">+{{ priceChange.replace('-', '') }}</span>
-                  <span class="text-red-500 font-semibold text-xs sm:text-base">-{{ priceChange.replace('+', '') }}</span>
+                  <span class="text-green-400 font-semibold text-[10px] sm:text-sm">+{{ priceChange.replace('-', '') }}</span>
+                  <span class="text-red-500 font-semibold text-[10px] sm:text-sm">-{{ priceChange.replace('+', '') }}</span>
                 </div>
               </div>
               <div class="flex items-center justify-between mb-1 sm:mb-2">
                 <div class="flex items-center space-x-1 sm:space-x-2 text-white">
-                  <ChartBarIcon class="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
-                  <span class="text-xs sm:text-sm">24 hours</span>
+                  <ChartBarIcon class="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
+                  <span class="text-[10px] sm:text-xs">24 hours</span>
                 </div>
-                <div class="text-white font-medium text-xs sm:text-base">
+                <div class="text-white font-medium text-[10px] sm:text-sm">
                   USTD {{ volume }}
                 </div>
               </div>
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-1 sm:space-x-2 text-white">
-                  <CalculatorIcon class="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
-                  <span class="text-xs sm:text-sm">24-hour transaction</span>
+                  <CalculatorIcon class="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
+                  <span class="text-[10px] sm:text-xs">24-hour transaction</span>
                 </div>
-                <div class="text-white font-medium text-xs sm:text-base">
+                <div class="text-white font-medium text-[10px] sm:text-sm">
                   USTD {{ currentPrice }}
                 </div>
               </div>
@@ -405,7 +405,7 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
             <div>
               <button
                 @click="toggleOrderForm"
-                class="w-full py-3 sm:py-4 text-white font-semibold rounded-full bg-[#23262F] hover:bg-[#f3f4f6] hover:text-[#181A20] focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm sm:text-base"
+                class="w-full py-2 sm:py-3 text-white font-semibold rounded-full bg-[#23262F] hover:bg-[#f3f4f6] hover:text-[#181A20] focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-xs sm:text-sm"
               >
                 Order
               </button>

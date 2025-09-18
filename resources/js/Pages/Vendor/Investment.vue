@@ -124,44 +124,44 @@ const goBack = () => {
   <Head title="Grow Your Investment" />
 
   <AuthenticatedLayout>
-    <button @click="goBack" class="flex items-center space-x-2 text-white mb-4 hover:text-gray-300">
-      <ArrowLeftIcon class="h-5 w-5" />
-      <span>Back</span>
+    <button @click="goBack" class="flex items-center space-x-2 text-white mb-3 hover:text-gray-300 sm:mb-4">
+      <ArrowLeftIcon class="h-4 w-4 sm:h-5 sm:w-5" />
+      <span class="text-sm sm:text-base">Back</span>
     </button>
 
-    <div class="max-w-2xl mx-auto pt-4 py-6 px-4 sm:max-w-full sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto pt-2 py-4 px-2 sm:max-w-full sm:px-4 lg:px-6 sm:pt-4 sm:py-6">
       <div class="flex items-center justify-center space-x-2">
-        <ArrowUpIcon class="h-6 w-6 text-green-400" />
-        <h2 class="text-2xl py-3 font-bold text-white">
+        <ArrowUpIcon class="h-5 w-5 text-green-400 sm:h-6 sm:w-6" />
+        <h2 class="text-xl py-2 font-bold text-white sm:text-2xl sm:py-3">
           Grow Your Investment
         </h2>
       </div>
       <!-- Balance Section -->
-      <div class="bg-black shadow-md rounded-lg p-6 mb-6 sm:p-4 border border-gray-800">
-        <p class="text-sm text-gray-300 sm:text-xs">Current USDT Balance</p>
-        <p class="text-2xl font-bold text-white sm:text-xl">
+      <div class="bg-black shadow-md rounded-lg p-3 mb-4 sm:p-4 sm:mb-6 border border-gray-800">
+        <p class="text-xs text-gray-300 sm:text-sm">Current USDT Balance</p>
+        <p class="text-xl font-bold text-white sm:text-2xl">
           {{ usdtBalance.toLocaleString('en-US', { minimumFractionDigits: 2 }) }} USDT
         </p>
       </div>
 
       <!-- Active Investments -->
-      <div v-if="activeInvestments.length" class="mb-6">
-        <h3 class="text-lg font-semibold text-white mb-2 sm:text-base">Active Investments</h3>
+      <div v-if="activeInvestments.length" class="mb-4 sm:mb-6">
+        <h3 class="text-base font-semibold text-white mb-2 sm:text-lg">Active Investments</h3>
         <div
           v-for="investment in activeInvestments"
           :key="investment.id"
-          class="bg-black shadow-md rounded-lg p-4 mb-2 sm:p-3 border border-gray-800"
+          class="bg-black shadow-md rounded-lg p-3 mb-2 sm:p-4 border border-gray-800"
         >
-          <p class="font-medium text-white sm:text-sm">
+          <p class="font-medium text-white text-sm sm:text-base">
             {{ formatPlanName(investment.plan) }} Plan
           </p>
-          <p class="text-sm text-gray-300 sm:text-xs">
+          <p class="text-xs text-gray-300 sm:text-sm">
             Amount: {{ investment.amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) }} USDT
           </p>
-          <p class="text-sm text-green-400 sm:text-xs">
+          <p class="text-xs text-green-400 sm:text-sm">
             Profit: {{ investment.profit.toLocaleString('en-US', { minimumFractionDigits: 2 }) }} USDT
           </p>
-          <p class="text-sm text-gray-300 sm:text-xs">
+          <p class="text-xs text-gray-300 sm:text-sm">
             Time Remaining: {{ getTimeRemaining(investment.ends_at) }}
           </p>
         </div>
@@ -171,16 +171,16 @@ const goBack = () => {
       <!-- <div class="bg-gradient-to-r from-blue-600 to-purple-600 shadow-md rounded-lg p-6 sm:p-4"> -->
 
 <!-- Investment Plans -->
-      <div class="bg-black shadow-lg rounded-xl p-8 sm:p-5 border border-gray-800">
-        <h3 class="text-xl font-bold text-white mb-6 sm:text-lg">Investment Plans</h3>
+      <div class="bg-black shadow-lg rounded-xl p-4 sm:p-5 border border-gray-800">
+        <h3 class="text-lg font-bold text-white mb-4 sm:text-xl sm:mb-6">Investment Plans</h3>
 
         <!-- Error Message -->
-        <div v-if="errorMessage" class="bg-red-900 border-l-4 border-red-500 text-red-200 p-4 mb-4 rounded-r-lg sm:p-3 sm:text-sm">
+        <div v-if="errorMessage" class="bg-red-900 border-l-4 border-red-500 text-red-200 p-3 mb-3 rounded-r-lg sm:p-4 sm:text-sm">
           <p>{{ errorMessage }}</p>
         </div>
 
         <!-- Success Message -->
-        <div v-if="successMessage" class="bg-green-900 border-l-4 border-green-500 text-green-200 p-4 mb-4 rounded-r-lg sm:p-3 sm:text-sm">
+        <div v-if="successMessage" class="bg-green-900 border-l-4 border-green-500 text-green-200 p-3 mb-3 rounded-r-lg sm:p-4 sm:text-sm">
           <p>{{ successMessage }}</p>
         </div>
 
@@ -188,18 +188,18 @@ const goBack = () => {
         <button
           v-if="!showForm"
           @click="showForm = true"
-          class="w-full action-btn font-normal py-1 rounded-lg shadow-md transition duration-300 mb-6 sm:py-0.5 sm:text-sm border border-gray-300"
+          class="w-full action-btn font-normal py-2 rounded-lg shadow-md transition duration-300 mb-4 sm:py-1 sm:mb-6 border border-gray-300 text-sm sm:text-base"
         >
           Start New Investment
         </button>
 
         <!-- Investment Form -->
-        <div v-if="showForm" class="space-y-6 mb-6 sm:space-y-4">
+        <div v-if="showForm" class="space-y-4 mb-4 sm:space-y-6 sm:mb-6">
           <div>
-            <label class="block text-sm font-medium text-white mb-2 sm:text-xs">Select Plan</label>
+            <label class="block text-xs font-medium text-white mb-2 sm:text-sm">Select Plan</label>
             <select
               v-model="selectedPlan"
-              class="w-full p-4 border rounded-lg bg-black text-white border-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-3 sm:text-sm"
+              class="w-full p-3 border rounded-lg bg-black text-white border-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-4 sm:text-sm"
               style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%23ffffff%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22M19%209l-7%207-7-7%22%20/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.25rem;"
             >
               <option value="" disabled class="bg-black text-white">Select a plan</option>
@@ -210,36 +210,36 @@ const goBack = () => {
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-white mb-2 sm:text-xs">Investment Amount (USDT)</label>
+            <label class="block text-xs font-medium text-white mb-2 sm:text-sm">Investment Amount (USDT)</label>
             <input
               v-model="investmentAmount"
               type="number"
               min="0"
               step="0.01"
               placeholder="Enter amount"
-              class="w-full p-4 border rounded-lg bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-3 sm:text-sm border-gray-700"
+              class="w-full p-3 border rounded-lg bg-black text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-4 sm:text-sm border-gray-700"
             />
-            <p v-if="selectedPlan" class="text-xs text-gray-400 mt-2 sm:text-xs">
+            <p v-if="selectedPlan" class="text-[10px] text-gray-400 mt-2 sm:text-xs">
               Minimum: {{ plans[selectedPlan].min }} USDT
             </p>
           </div>
 
-          <div v-if="selectedPlan" class="flex justify-between text-sm sm:text-xs">
+          <div v-if="selectedPlan" class="flex justify-between text-xs sm:text-sm">
             <span class="text-gray-300">Expected Profit:</span>
             <span class="font-medium text-green-400">{{ expectedProfit }} USDT</span>
           </div>
 
-          <div class="flex space-x-3 sm:space-x-2">
+          <div class="flex space-x-2 sm:space-x-3">
             <button
               @click="startInvestment"
               :disabled="!selectedPlan || !investmentAmount"
-              class="w-full action-btn disabled:opacity-60 disabled:cursor-not-allowed font-normal py-1 sm:py-0.5 rounded-lg shadow-md transition duration-300 text-sm border border-gray-300"
+              class="w-full action-btn disabled:opacity-60 disabled:cursor-not-allowed font-normal py-2 sm:py-1 rounded-lg shadow-md transition duration-300 text-sm border border-gray-300"
             >
               Confirm
             </button>
             <button
               @click="showForm = false; selectedPlan = null; investmentAmount = '';"
-              class="w-full action-btn font-normal py-1 sm:py-0.5 rounded-lg shadow-md transition duration-300 text-sm border border-gray-300"
+              class="w-full action-btn font-normal py-2 sm:py-1 rounded-lg shadow-md transition duration-300 text-sm border border-gray-300"
             >
               Cancel
             </button>
@@ -247,22 +247,22 @@ const goBack = () => {
         </div>
 
         <!-- Plans List -->
-        <div class="space-y-4 sm:space-y-3">
+        <div class="space-y-3 sm:space-y-4">
           <div
             v-for="(plan, key) in plans"
             :key="key"
-            class="bg-black rounded-lg p-4 hover:bg-gray-900 transition duration-300 sm:p-3 border border-gray-800"
+            class="bg-black rounded-lg p-3 hover:bg-gray-900 transition duration-300 sm:p-4 border border-gray-800"
           >
-            <h4 class="text-md font-semibold text-white sm:text-sm">
+            <h4 class="text-sm font-semibold text-white sm:text-base">
               {{ formatPlanName(key) }} Plan
             </h4>
-            <p class="text-sm text-green-400 sm:text-xs">
+            <p class="text-xs text-green-400 sm:text-sm">
               Profit: {{ (plan.profit * 100).toFixed(0) }}%
             </p>
-            <p class="text-sm text-gray-300 sm:text-xs">
+            <p class="text-xs text-gray-300 sm:text-sm">
               Minimum: {{ plan.min.toLocaleString() }} USDT
             </p>
-            <p class="text-sm text-gray-300 sm:text-xs">
+            <p class="text-xs text-gray-300 sm:text-sm">
               Duration: {{ plan.days }} Days
             </p>
           </div>

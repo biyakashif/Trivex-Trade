@@ -18,7 +18,7 @@ public function index()
         $query->with('coinType')->orderBy('created_at', 'desc');
     }])
     ->leftJoinSub(
-        Withdraw::select('user_id', DB::raw('MAX(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as has_pending'))
+        Withdraw::select('user_id', DB::raw('MAX(CASE WHEN status IN ("pending", "Under Review") THEN 1 ELSE 0 END) as has_pending'))
             ->groupBy('user_id'),
         'withdraws_agg',
         'users.id',
@@ -38,7 +38,22 @@ public function index()
     {
         $withdraw = Withdraw::findOrFail($id);
 
-        if ($withdraw->status !== 'pending') {
+        if ($withdraw->status !== 'Under Review') {
+            return redirect()->back()->with('error', 'This withdrawal has already been processed.');
+        }
+
+        $withdraw->status = 'approved';
+        $withdraw->approved_at = now();
+        $withdraw->save();
+
+        return redirect()->back()->with('success', 'Withdrawal approved successfully.');
+    }
+
+    public function reject($id)
+    {
+        $withdraw = Withdraw::with('coinType')->findOrFail($id);
+
+        if ($withdraw->status !== 'Under Review') {
             return redirect()->back()->with('error', 'This withdrawal has already been processed.');
         }
 
@@ -52,40 +67,16 @@ public function index()
         $amount = $withdraw->amount_withdraw;
 
         if ($withdraw->coin_id) {
-            // Crypto withdrawal
+            // Crypto withdrawal - add balance back
             $symbol = strtolower($withdraw->coinType->symbol);
             $balanceKey = $symbol . '_balance';
-
-            if ($balance->$balanceKey < $amount) {
-                return redirect()->back()->with('error', 'Insufficient balance to approve this withdrawal.');
-            }
-
-            $balance->$balanceKey -= $amount;
+            $balance->$balanceKey += $amount;
         } else {
-            // Bank withdrawal (assumed in USDT)
-            if ($balance->usdt_balance < $amount) {
-                return redirect()->back()->with('error', 'Insufficient USDT balance to approve this withdrawal.');
-            }
-
-            $balance->usdt_balance -= $amount;
+            // Bank withdrawal (assumed in USDT) - add balance back
+            $balance->usdt_balance += $amount;
         }
 
         $balance->save();
-
-        $withdraw->status = 'approved';
-        $withdraw->approved_at = now();
-        $withdraw->save();
-
-        return redirect()->back()->with('success', 'Withdrawal approved successfully.');
-    }
-
-    public function reject($id)
-    {
-        $withdraw = Withdraw::findOrFail($id);
-
-        if ($withdraw->status !== 'pending') {
-            return redirect()->back()->with('error', 'This withdrawal has already been processed.');
-        }
 
         $withdraw->status = 'rejected';
         $withdraw->rejected_at = now();

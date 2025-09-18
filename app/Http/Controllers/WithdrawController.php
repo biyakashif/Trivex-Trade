@@ -74,11 +74,15 @@ class WithdrawController extends Controller
                 return redirect()->back()->with('error', 'Insufficient balance for this withdrawal.');
             }
 
+            // Deduct balance immediately
+            $balance->$balanceKey -= $validated['amount_withdraw'];
+            $balance->save();
+
             Withdraw::create([
                 'user_id' => $user->id,
                 'coin_id' => $validated['coin_id'],
                 'amount_withdraw' => $validated['amount_withdraw'],
-                'status' => 'pending',
+                'status' => 'Under Review',
                 'bank_account_number' => $validated['wallet_address'],
                 'crypto_wallet' => $validated['wallet_address'],
             ]);
@@ -100,10 +104,14 @@ class WithdrawController extends Controller
                 return redirect()->back()->with('error', 'Insufficient USDT balance for this withdrawal.');
             }
 
+            // Deduct balance immediately
+            $balance->usdt_balance -= $validated['bank_withdraw_amount'];
+            $balance->save();
+
             Withdraw::create([
                 'user_id' => $user->id,
                 'amount_withdraw' => $validated['bank_withdraw_amount'],
-                'status' => 'pending',
+                'status' => 'Under Review',
                 'account_holder_name' => $validated['account_holder_name'],
                 'bank_name' => $validated['bank_name'],
                 'bank_account_number' => $validated['bank_account_number'],
@@ -124,6 +132,28 @@ class WithdrawController extends Controller
     public function history(Request $request)
     {
         $symbol = $request->query('symbol');
+
+        // If no symbol is provided, return all withdrawals for the user
+        if (!$symbol) {
+            $withdrawals = Withdraw::where('user_id', Auth::id())
+                ->with('coinType')
+                ->orderBy('created_at', 'desc')
+                ->get([
+                    'id',
+                    'amount_withdraw',
+                    'status',
+                    'crypto_wallet',
+                    'account_holder_name',
+                    'bank_name',
+                    'bank_account_number',
+                    'created_at',
+                    'coin_id'
+                ]);
+
+            return response()->json([
+                'withdrawals' => $withdrawals,
+            ]);
+        }
 
         // Find the coin type by symbol
         $coinType = CoinType::where('symbol', $symbol)->first();

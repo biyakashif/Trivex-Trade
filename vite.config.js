@@ -36,5 +36,23 @@ export default defineConfig(({ mode }) => {
             'import.meta.env.VITE_PUSHER_APP_KEY': JSON.stringify(env.PUSHER_APP_KEY || '96321197b1081515311a'),
             'import.meta.env.VITE_PUSHER_APP_CLUSTER': JSON.stringify(env.PUSHER_APP_CLUSTER || 'mt1'),
         },
+        build: {
+            // Disable CSS code splitting in development to prevent preload warnings
+            cssCodeSplit: mode === 'production',
+            // Optimize chunk splitting
+            rollupOptions: {
+                output: {
+                    manualChunks: mode === 'production' ? {
+                        vendor: ['vue', '@inertiajs/vue3'],
+                    } : undefined,
+                },
+            },
+        },
+        // Disable preload optimization in development
+        ...(mode !== 'production' && {
+            optimizeDeps: {
+                include: ['vue', '@inertiajs/vue3'],
+            },
+        }),
     };
 });

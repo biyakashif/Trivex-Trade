@@ -31,6 +31,23 @@ const history = ref([]);
 const historyError = ref(null); // State for history fetch error
 const withdrawHistory = ref([]);
 const withdrawHistoryError = ref(null); // State for withdraw history fetch error
+
+// Polling intervals
+let depositPollInterval = null;
+let withdrawPollInterval = null;
+let balancePollInterval = null;
+
+// Echo listeners
+let balanceEchoListener = null;
+let depositEchoListener = null;
+let withdrawEchoListener = null;
+
+// Make balances reactive for live updates
+const liveBalances = ref({
+  usdt_balance: props.balances.usdt_balance || 0,
+  btc_balance: props.balances.btc_balance || 0,
+  eth_balance: props.balances.eth_balance || 0,
+});
 const successMessage = ref(null); // State for success message
 const exchangeErrorMessage = ref(''); // State for exchange error message
 const exchangeSuccessMessage = ref(''); // State for exchange success message
@@ -59,16 +76,29 @@ onMounted(() => {
   const symbols = ['usdt','btc','eth'].filter(s => s !== props.symbol);
   toCrypto.value = symbols[0] || props.symbol;
   fetchWithdrawHistory(); // Fetch withdrawal history on mount
+  
+  // Set up Echo listeners for real-time updates with delay
+  setTimeout(() => {
+    setupEchoListeners();
+  }, 100);
 });
 
 // Computed property to get the remaining balance after swapping
 const remainingBalance = computed(() => {
   const balanceKey = cryptos.find(c => c.symbol === props.symbol).balanceKey;
-  const currentBalance = Number(props.balances[balanceKey]) || 0;
+  const currentBalance = Number(liveBalances.value[balanceKey]) || 0;
   const amountToSwap = parseFloat(fromAmount.value) || 0;
   const remaining = currentBalance - amountToSwap;
   const decimals = cryptos.find(c => c.symbol === props.symbol).decimals;
   return remaining >= 0 ? formatBalance(remaining, decimals) : formatBalance(0, decimals);
+});
+
+// Computed property for exchange "To" balance
+const exchangeToBalance = computed(() => {
+  const crypto = cryptos.find(c => c.symbol === toCrypto.value);
+  if (!crypto) return '0.00';
+  const balance = Number(liveBalances.value[crypto.balanceKey]) || 0;
+  return formatBalance(balance, crypto.decimals);
 });
 
 // Computed property to get the live rate (matching Swap.vue)
@@ -96,7 +126,7 @@ const updateToAmount = () => {
 // Set maximum amount for exchange
 const setMaxAmount = () => {
   const balanceKey = cryptos.find(c => c.symbol === props.symbol).balanceKey;
-  const maxAmount = Number(props.balances[balanceKey]) || 0;
+  const maxAmount = Number(liveBalances.value[balanceKey]) || 0;
   fromAmount.value = maxAmount.toString();
   updateToAmount();
 };
@@ -109,7 +139,7 @@ const goBack = () => {
 // Get current crypto balance
 const currentBalance = computed(() => {
   const balanceKey = `${props.symbol}_balance`;
-  return props.balances[balanceKey] || 0;
+  return liveBalances.value[balanceKey] || 0;
 });
 
 // Get current crypto info
@@ -124,26 +154,26 @@ const getWalletName = (symbol) => {
 };
 
 // Display amounts with live USD conversion
-const displayAmounts = (symbol) => {
+const displayAmounts = computed(() => {
   const raw = currentBalance.value;
-  const decimals = symbol === 'usdt' ? 2 : (symbol === 'btc' ? 8 : 4);
+  const decimals = props.symbol === 'usdt' ? 2 : (props.symbol === 'btc' ? 8 : 4);
   const formattedAmount = formatBalance(raw, decimals);
   
   // Calculate live USD value
   let usdValue = 0;
-  if (symbol === 'usdt') {
+  if (props.symbol === 'usdt') {
     usdValue = raw; // USDT is already in USD
   } else {
-    const price = Number(cryptoStore.getPrice(symbol)) || 0;
+    const price = Number(cryptoStore.getPrice(props.symbol)) || 0;
     usdValue = raw * price;
   }
   
   const primary = `US$ ${formatBalance(usdValue, 2)}`;
-  const secondary = `${formattedAmount} ${symbol.toUpperCase()}`;
-  const icon = cryptoStore.getIcon(symbol);
+  const secondary = `${formattedAmount} ${props.symbol.toUpperCase()}`;
+  const icon = cryptoStore.getIcon(props.symbol);
   
   return { primary, secondary, icon, usdValue, formattedAmount };
-};
+});
 
 // Form setup for deposit submission
 const form = useForm({
@@ -215,13 +245,17 @@ const fetchHistory = async () => {
     const data = await response.json();
     history.value = data.deposits;
     historyError.value = null;
-    showHistory.value = true;
   } catch (error) {
     console.error('Error fetching deposit history:', error);
     historyError.value = 'Failed to load deposit history. Please try again later.';
     history.value = [];
-    showHistory.value = true;
   }
+};
+
+// Open history modal and fetch data
+const openHistoryModal = async () => {
+  await fetchHistory();
+  showHistory.value = true;
 };
 
 // Fetch withdrawal history for the current symbol
@@ -241,6 +275,31 @@ const fetchWithdrawHistory = async () => {
   }
 };
 
+// Fetch updated balances (removed - using Echo for real-time updates)
+// const fetchBalances = async () => {
+//   try {
+//     const response = await fetch(route('deposit'), {
+//       headers: {
+//         'Accept': 'application/json',
+//         'X-Requested-With': 'XMLHttpRequest',
+//       },
+//     });
+//     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+//     const data = await response.json();
+    
+//     // Update live balances if data is available
+//     if (data.props && data.props.balances) {
+//       liveBalances.value = {
+//         usdt_balance: data.props.balances.usdt_balance || 0,
+//         btc_balance: data.props.balances.btc_balance || 0,
+//         eth_balance: data.props.balances.eth_balance || 0,
+//       };
+//     }
+//   } catch (error) {
+//     console.error('Error fetching balances:', error);
+//   }
+// };
+
 // Submit deposit
 const submitDeposit = () => {
   form.post(route('deposit.store'), {
@@ -254,6 +313,9 @@ const submitDeposit = () => {
       form.reset();
       previewImage.value = '';
       fetchHistory(); // Refresh history after submission
+      
+      // Note: Deposit balance will be updated when approved via Echo
+      // No immediate local balance update needed for deposits
     },
     onError: (errors) => {
       successMessage.value = null;
@@ -337,6 +399,14 @@ const submitSend = async () => {
       sendForm.reset();
       fetchWithdrawHistory(); // Refresh withdrawal history
 
+      // Immediately update local balance for real-time display
+      const balanceKey = `${props.symbol}_balance`;
+      const currentAmount = Number(liveBalances.value[balanceKey]) || 0;
+      liveBalances.value = {
+        ...liveBalances.value,
+        [balanceKey]: Math.max(0, currentAmount - amount)
+      };
+
       // Clear success message after 5 seconds
       setTimeout(() => {
         sendSuccessMessage.value = '';
@@ -370,13 +440,81 @@ const usdtCoinId = computed(() => {
   return found?.id || '';
 });
 
+// Setup Echo listeners for real-time updates
+const setupEchoListeners = () => {
+  const userId = page?.props?.auth?.user?.id;
+  
+  console.log('DepositDetails - Setting up Echo listeners...');
+  console.log('DepositDetails - User ID:', userId);
+  console.log('DepositDetails - Window.Echo:', window.Echo);
+  console.log('DepositDetails - Page props auth:', page?.props?.auth);
+  
+  if (!userId || !window.Echo) {
+    console.warn('DepositDetails - User ID or Echo not available for real-time updates');
+    return;
+  }
+
+  console.log('DepositDetails - Setting up Echo listener for user:', userId);
+
+  // Balance updates listener
+  balanceEchoListener = window.Echo.private(`user.${userId}`)
+    .listen('.balance.updated', (data) => {
+      console.log('DepositDetails - Balance updated via Echo:', data);
+      console.log('DepositDetails - Current liveBalances before update:', liveBalances.value);
+      if (data.balances) {
+        liveBalances.value = {
+          usdt_balance: data.balances.usdt_balance || 0,
+          btc_balance: data.balances.btc_balance || 0,
+          eth_balance: data.balances.eth_balance || 0,
+        };
+        console.log('DepositDetails - Updated liveBalances:', liveBalances.value);
+      }
+    });
+
+  // Deposit history updates (if needed)
+  depositEchoListener = window.Echo.private(`user.${userId}`)
+    .listen('.deposit.updated', (data) => {
+      console.log('DepositDetails - Deposit updated via Echo:', data);
+      fetchHistory(); // Refresh deposit history
+    });
+
+  // Withdrawal history updates (if needed)
+  withdrawEchoListener = window.Echo.private(`user.${userId}`)
+    .listen('.withdrawal.updated', (data) => {
+      console.log('DepositDetails - Withdrawal updated via Echo:', data);
+      fetchWithdrawHistory(); // Refresh withdrawal history
+    });
+};
+
+// Setup onUnmounted to clear Echo listeners
+import { onUnmounted } from 'vue';
+
+onUnmounted(() => {
+  // Clean up Echo listeners
+  if (balanceEchoListener) {
+    balanceEchoListener.stopListening('.balance.updated');
+  }
+  if (depositEchoListener) {
+    depositEchoListener.stopListening('.deposit.updated');
+  }
+  if (withdrawEchoListener) {
+    withdrawEchoListener.stopListening('.withdrawal.updated');
+  }
+  
+  // Leave the private channel
+  const userId = page?.props?.auth?.user?.id;
+  if (userId && window.Echo) {
+    window.Echo.leave(`user.${userId}`);
+  }
+});
+
 const performExchange = async () => {
   exchangeErrorMessage.value = '';
   exchangeSuccessMessage.value = '';
 
   const amount = parseFloat(fromAmount.value);
   const fromBalanceKey = cryptos.find(c => c.symbol === props.symbol).balanceKey;
-  const availableBalance = Number(props.balances[fromBalanceKey]) || 0;
+  const availableBalance = Number(liveBalances.value[fromBalanceKey]) || 0;
 
   if (!amount || amount <= 0) {
     exchangeErrorMessage.value = 'Please enter a valid amount.';
@@ -404,6 +542,20 @@ const performExchange = async () => {
       preserveState: true,
       onSuccess: () => {
         exchangeSuccessMessage.value = 'Swap completed successfully!';
+        
+        // Immediately update local balances for real-time display
+        const fromBalanceKey = cryptos.find(c => c.symbol === props.symbol).balanceKey;
+        const toBalanceKey = cryptos.find(c => c.symbol === toCrypto.value).balanceKey;
+        
+        const currentFromBalance = Number(liveBalances.value[fromBalanceKey]) || 0;
+        const currentToBalance = Number(liveBalances.value[toBalanceKey]) || 0;
+        
+        liveBalances.value = {
+          ...liveBalances.value,
+          [fromBalanceKey]: Math.max(0, currentFromBalance - amount),
+          [toBalanceKey]: currentToBalance + convertedAmount
+        };
+        
         fromAmount.value = '';
         toAmount.value = '';
       },
@@ -422,109 +574,109 @@ const performExchange = async () => {
   <AuthenticatedLayout>
   <div class="bg-black min-h-screen pt-2 sm:pt-4">
       <!-- Header with back button and title -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800">
-        <button @click="goBack" class="w-8 h-8 flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 border-b border-gray-800">
+        <button @click="goBack" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h1 class="text-lg font-semibold text-white">{{ getWalletName(symbol) }}</h1>
-        <button @click="fetchHistory" class="w-8 h-8 flex items-center justify-center">
-          <ClipboardDocumentListIcon class="w-5 h-5 text-white" />
+        <h1 class="text-sm sm:text-lg font-semibold text-white">{{ getWalletName(props.symbol) }}</h1>
+        <button @click="openHistoryModal" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+          <ClipboardDocumentListIcon class="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         </button>
       </div>
 
       <!-- Balance Display -->
-      <div class="px-4 py-2 text-center">
-        <div class="text-lg font-medium text-gray-300 mb-2">{{ displayAmounts(symbol).primary }}</div>
+      <div class="px-3 py-2 sm:px-4 sm:py-3 text-center">
+        <div class="text-base sm:text-xl font-medium text-gray-300 mb-2 sm:mb-3">{{ displayAmounts.primary }}</div>
         <div class="flex items-center justify-center text-white">
-          <img v-if="displayAmounts(symbol).icon" :src="displayAmounts(symbol).icon" :alt="symbol.toUpperCase()" class="w-6 h-6 mr-2 rounded-full" />
-          <span class="text-2xl font-bold">{{ displayAmounts(symbol).secondary }}</span>
+          <img v-if="displayAmounts.icon" :src="displayAmounts.icon" :alt="props.symbol.toUpperCase()" class="w-4 h-4 sm:w-6 sm:h-6 mr-1 sm:mr-2 rounded-full" />
+          <span class="text-lg sm:text-2xl font-bold">{{ displayAmounts.secondary }}</span>
         </div>
       </div>
 
       <div class="px-2 pb-4 sm:px-4 sm:pb-6 mt-0">
-        <div class="bg-black rounded-xl border border-gray-800 overflow-hidden mt-0" style="margin-top:0!important;">
+        <div class="bg-black rounded-xl border border-gray-800 mt-0" style="margin-top:0!important;">
 
           <!-- Tabs (clean like image) -->
-          <div class="flex justify-center gap-12 px-4 pt-6">
+          <div class="flex justify-between px-4 sm:px-8 py-2 sm:py-4">
             <button @click="activeTab='receive'; sendErrorMessage=''; sendSuccessMessage=''" :class="[
-              'tab-button text-base font-medium text-white cursor-pointer',
+              'tab-button text-sm sm:text-lg font-medium text-white cursor-pointer',
               activeTab==='receive' 
-                ? 'border-b-2 border-blue-400 pb-2' 
+                ? 'border-b-2 border-blue-400 pb-1 sm:pb-3' 
                 : ''
             ]">Receive</button>
             <button @click="activeTab='send'; sendErrorMessage=''; sendSuccessMessage=''" :class="[
-              'tab-button text-base font-medium text-white cursor-pointer',
+              'tab-button text-sm sm:text-lg font-medium text-white cursor-pointer',
               activeTab==='send' 
-                ? 'border-b-2 border-blue-400 pb-2' 
+                ? 'border-b-2 border-blue-400 pb-1 sm:pb-3' 
                 : ''
             ]">Send</button>
             <button @click="activeTab='exchange'; exchangeErrorMessage=''; exchangeSuccessMessage=''" :class="[
-              'tab-button text-base font-medium text-white cursor-pointer',
+              'tab-button text-sm sm:text-lg font-medium text-white cursor-pointer',
               activeTab==='exchange' 
-                ? 'border-b-2 border-blue-400 pb-2' 
+                ? 'border-b-2 border-blue-400 pb-1 sm:pb-3' 
                 : ''
             ]">Exchange</button>
           </div>
 
           <!-- Tab Content -->
-          <div class="p-4 space-y-2">
+          <div class="p-2 sm:p-4 space-y-1 sm:space-y-2">
             <!-- Success Message -->
             <div v-if="successMessage" class="mb-2 p-2 bg-green-900 text-green-200 rounded-md text-xs text-center border border-green-800">
               {{ successMessage }}
             </div>
 
           <!-- RECEIVE: Network selector (pills) -->
-          <div v-if="activeTab==='receive' && symbol === 'usdt'" class="space-y-2">
-            <div class="text-sm font-semibold text-white">Receiving assets</div>
-            <div class="flex space-x-3">
-              <button class="px-3 py-2 rounded-xl border text-sm"
+          <div v-if="activeTab==='receive' && props.symbol === 'usdt'" class="space-y-1 mb-4">
+            <div class="text-xs sm:text-sm font-semibold text-white">Receiving assets</div>
+            <div class="flex space-x-1 sm:space-x-2">
+              <button class="px-1.5 py-0.5 sm:px-3 sm:py-2 rounded-lg border text-xs sm:text-sm"
                 :class="depositDetails.network?.toLowerCase().includes('erc') ? 'border-blue-400 text-white' : 'border-gray-700 text-gray-400'">
-                ERC20—{{ symbol.toUpperCase() }}
+                ERC20—{{ props.symbol.toUpperCase() }}
               </button>
-              <button class="px-3 py-2 rounded-xl border text-sm"
+              <button class="px-1.5 py-0.5 sm:px-3 sm:py-2 rounded-lg border text-xs sm:text-sm"
                 :class="depositDetails.network?.toLowerCase().includes('trc') ? 'border-blue-400 text-white' : 'border-gray-700 text-gray-400'">
-                TRC20—{{ symbol.toUpperCase() }}
+                TRC20—{{ props.symbol.toUpperCase() }}
               </button>
             </div>
           </div>
 
           <!-- RECEIVE: QR Code -->
-          <div v-if="activeTab==='receive'" class="flex justify-center py-1">
+          <div v-if="activeTab==='receive'" class="flex justify-center py-0.5">
             <img
               :src="depositDetails.qr_code ? '/storage/' + depositDetails.qr_code : 'https://via.placeholder.com/100?text=No+QR+Code'"
               alt="QR Code"
-              class="w-32 h-32"
+              class="w-20 h-20 sm:w-32 sm:h-32"
             />
           </div>
 
           <!-- RECEIVE: Address + Copy link -->
           <div v-if="activeTab==='receive'" class="text-center">
-            <div class="text-xs text-white break-all">{{ depositDetails.address }}</div>
-            <button @click="copyAddress" class="text-blue-400 text-xs mt-1 hover:text-blue-300">{{ isCopied ? 'Copied!' : 'Copy address' }}</button>
-            <div v-if="copyError" class="mt-1 text-[10px] text-red-400">
+            <div class="text-[10px] sm:text-xs text-white break-all px-1">{{ depositDetails.address }}</div>
+            <button @click="copyAddress" class="copy-address-btn text-blue-400 text-xs mt-0.5 hover:text-blue-300">{{ isCopied ? 'Copied!' : 'Copy address' }}</button>
+            <div v-if="copyError" class="mt-0.5 text-[10px] text-red-400">
               {{ copyError }}
             </div>
           </div>
 
           <!-- RECEIVE: Amount Input (rounded with suffix) -->
-          <div v-if="activeTab==='receive'" class="space-y-1">
-            <div class="text-sm font-semibold text-white">Deposit amount</div>
-            <div class="flex items-center border border-gray-700 rounded-2xl px-3 py-2 bg-black">
-              <span class="mr-2 text-xs bg-gray-800 text-white rounded-full px-2 py-1">{{ symbol.toUpperCase() }}</span>
-              <input v-model="form.amount" type="number" step="any" placeholder="0" class="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder-gray-500" />
-              <span class="ml-2 text-gray-400 text-sm uppercase">{{ symbol }}</span>
+          <div v-if="activeTab==='receive'" class="space-y-0.5">
+            <div class="text-xs sm:text-sm font-semibold text-white">Deposit amount</div>
+            <div class="flex items-center border border-gray-700 rounded-xl px-2 py-1 sm:px-3 sm:py-2 bg-black">
+              <span class="mr-1 sm:mr-2 text-xs bg-gray-800 text-white rounded-full px-1 py-0.5 sm:px-2 sm:py-1">{{ props.symbol.toUpperCase() }}</span>
+              <input v-model="form.amount" type="number" step="any" placeholder="0" class="flex-1 bg-transparent text-white text-xs sm:text-sm focus:outline-none placeholder-gray-500" />
+              <span class="ml-1 sm:ml-2 text-gray-400 text-xs sm:text-sm uppercase">{{ props.symbol }}</span>
             </div>
           </div>
 
           <!-- RECEIVE: Upload Slip (tile) -->
-          <div v-if="activeTab==='receive'" class="space-y-1">
-            <div class="text-sm font-semibold text-white">Deposit screenshot</div>
-            <label class="w-28 h-28 border border-gray-700 rounded-lg flex items-center justify-center cursor-pointer bg-black hover:bg-gray-900 overflow-hidden">
+          <div v-if="activeTab==='receive'" class="space-y-0.5">
+            <div class="text-xs sm:text-sm font-semibold text-white">Deposit screenshot</div>
+            <label class="w-16 h-16 sm:w-28 sm:h-28 border border-gray-700 rounded-lg flex items-center justify-center cursor-pointer bg-black hover:bg-gray-900 overflow-hidden">
               <input type="file" class="hidden" accept="image/*" @change="handleFileChange" />
               <img v-if="previewImage" :src="previewImage" class="w-full h-full object-cover" />
-              <svg v-else class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              <svg v-else class="w-5 h-5 sm:w-8 sm:h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             </label>
           </div>
 
@@ -532,13 +684,13 @@ const performExchange = async () => {
           <button v-if="activeTab==='receive'"
             @click="submitDeposit"
             :disabled="form.processing"
-            class="w-full px-4 py-3 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-500"
+            class="w-full px-3 py-2 sm:px-4 sm:py-3 bg-green-600 text-white rounded-xl text-xs sm:text-sm font-medium hover:bg-green-500"
           >
             Submit
           </button>
 
           <!-- SEND -->
-          <div v-if="activeTab==='send'" class="space-y-4">
+          <div v-if="activeTab==='send'" class="space-y-3">
             <!-- Success Message for Send -->
             <div v-if="sendSuccessMessage" class="mb-2 p-2 bg-green-900 text-green-200 rounded-md text-xs text-center border border-green-800">
               {{ sendSuccessMessage }}
@@ -550,35 +702,35 @@ const performExchange = async () => {
             </div>
 
             <!-- Mirror Withdraw.vue structure (crypto tab) so backend receives identical fields -->
-            <div class="space-y-4">
+            <div class="space-y-3">
               <!-- Wallet Address -->
               <div>
-                <label class="block text-sm font-medium text-white mb-2">Wallet Address</label>
+                <label class="block text-sm font-medium text-white mb-1">Wallet Address</label>
                 <input 
                   v-model="sendForm.wallet_address" 
                   @input="sendErrorMessage = ''"
                   type="text" 
                   placeholder="Enter your wallet address" 
-                  class="w-full bg-black border border-gray-700 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-white placeholder-gray-400" 
+                  class="w-full bg-black border border-gray-700 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-white placeholder-gray-400 text-sm" 
                 />
               </div>
               
               <!-- Amount -->
               <div>
-                <label class="block text-sm font-medium text-white mb-2">Withdraw Amount</label>
-                <div class="space-y-2">
+                <label class="block text-sm font-medium text-white mb-1">Withdraw Amount</label>
+                <div class="space-y-1">
                   <input 
                     v-model="sendForm.amount_withdraw" 
                     @input="sendErrorMessage = ''"
                     type="number" 
                     step="any" 
                     placeholder="Enter amount" 
-                    class="w-full bg-black border border-gray-700 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-white placeholder-gray-400" 
+                    class="w-full bg-black border border-gray-700 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-white placeholder-gray-400 text-sm" 
                   />
-                  <div class="flex justify-between items-center text-sm">
+                  <div class="flex justify-between items-center text-xs">
                     <span class="text-gray-300 flex items-center">
-                      <img v-if="displayAmounts(symbol).icon" :src="displayAmounts(symbol).icon" :alt="symbol.toUpperCase()" class="w-3 h-3 mr-1 rounded-full" />
-                      Available: {{ displayAmounts(symbol).formattedAmount }} {{ props.symbol.toUpperCase() }}
+                      <img v-if="displayAmounts.icon" :src="displayAmounts.icon" :alt="props.symbol.toUpperCase()" class="w-3 h-3 mr-1 rounded-full" />
+                      Available: {{ displayAmounts.formattedAmount }} {{ props.symbol.toUpperCase() }}
                     </span>
                     <button 
                       @click="sendForm.amount_withdraw = currentBalance.toString()"
@@ -595,7 +747,7 @@ const performExchange = async () => {
                 <button 
                   @click="submitSend" 
                   :disabled="sendProcessing"
-                  class="w-full bg-green-600 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-green-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="w-full bg-green-600 text-white font-semibold py-2.5 rounded-xl shadow-md hover:bg-green-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   {{ sendProcessing ? 'Sending...' : 'Send' }}
                 </button>
@@ -603,7 +755,7 @@ const performExchange = async () => {
             </div>
 
             <!-- Withdrawal History -->
-            <div class="mt-6">
+            <div class="mt-4">
               <h3 class="text-sm font-semibold text-white mb-2">Sending History</h3>
               <div v-if="withdrawHistoryError" class="text-red-400 text-xs mb-2">
                 {{ withdrawHistoryError }}
@@ -611,12 +763,12 @@ const performExchange = async () => {
               <div v-else-if="withdrawHistory.length === 0" class="text-gray-400 text-xs">
                 No withdrawal history available.
               </div>
-              <div v-else class="space-y-2">
-                <div v-for="withdrawal in withdrawHistory" :key="withdrawal.id" class="border border-gray-800 rounded-md p-2 text-xs bg-black">
+              <div v-else class="space-y-1.5 max-h-32 overflow-y-auto">
+                <div v-for="withdrawal in withdrawHistory.slice(0, 3)" :key="withdrawal.id" class="border border-gray-800 rounded-md p-2 text-xs bg-black">
                   <div class="flex justify-between">
                     <span class="text-white font-medium">{{ withdrawal.symbol.toUpperCase() }}</span>
                     <span :class="{
-                      'text-yellow-400': withdrawal.status === 'pending',
+                      'text-yellow-400': withdrawal.status === 'pending' || withdrawal.status === 'Under Review',
                       'text-green-400': withdrawal.status === 'approved',
                       'text-red-400': withdrawal.status === 'rejected'
                     }">
@@ -641,13 +793,13 @@ const performExchange = async () => {
           </div>
 
           <!-- EXCHANGE -->
-          <div v-if="activeTab==='exchange'" class="space-y-4">
+          <div v-if="activeTab==='exchange'" class="space-y-3">
             <!-- From Crypto -->
             <div>
               <label class="block text-sm font-medium text-white mb-1">From</label>
-              <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-2 space-y-2 lg:space-y-0">
-                <div class="flex w-full lg:w-auto space-x-2">
-                  <div class="px-3 py-2 border border-gray-700 rounded-md bg-black text-white text-sm">
+              <div class="flex flex-col space-y-2">
+                <div class="flex space-x-2">
+                  <div class="px-2 py-1.5 border border-gray-700 rounded-md bg-black text-white text-sm flex-shrink-0">
                     {{ props.symbol.toUpperCase() }}
                   </div>
                   <input
@@ -656,25 +808,25 @@ const performExchange = async () => {
                     type="number"
                     step="any"
                     placeholder="Amount"
-                    class="w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-black text-white placeholder-gray-400 border-gray-700"
+                    class="flex-1 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-black text-white placeholder-gray-400 border-gray-700 px-2 py-1.5 text-sm"
                   />
                   <button
                     @click="setMaxAmount"
-                    class="px-3 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition duration-200 border border-gray-600"
+                    class="px-2 py-1.5 bg-gray-700 text-white rounded-md hover:bg-gray-600 transition duration-200 border border-gray-600 text-sm flex-shrink-0"
                   >
                     Max
                   </button>
                 </div>
               </div>
-              <p class="text-sm text-gray-300 mt-1">
+              <p class="text-xs text-gray-300 mt-1">
                 Remaining Balance: {{ remainingBalance }} {{ props.symbol.toUpperCase() }}
               </p>
             </div>
 
             <!-- Swap Icon -->
-            <div class="flex justify-center">
-              <button class="p-2 bg-gray-700 rounded-full hover:bg-gray-600 transition duration-200 border border-gray-600">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex justify-center py-1">
+              <button class="p-1.5 bg-gray-700 rounded-full hover:bg-gray-600 transition duration-200 border border-gray-600">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m-12 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
               </button>
@@ -683,11 +835,11 @@ const performExchange = async () => {
             <!-- To Crypto -->
             <div>
               <label class="block text-sm font-medium text-white mb-1">To</label>
-              <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-2 space-y-2 lg:space-y-0">
+              <div class="flex flex-col space-y-2">
                 <select
                   v-model="toCrypto"
                   @change="updateToAmount"
-                  class="w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-black text-white border-gray-700"
+                  class="w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-black text-white border-gray-700 px-2 py-1.5 text-sm"
                 >
                   <option
                     v-for="crypto in cryptos"
@@ -705,27 +857,27 @@ const performExchange = async () => {
                   type="text"
                   readonly
                   placeholder="Amount"
-                  class="w-full border rounded-md shadow-sm bg-black text-white placeholder-gray-400 border-gray-700"
+                  class="w-full border rounded-md shadow-sm bg-black text-white placeholder-gray-400 border-gray-700 px-2 py-1.5 text-sm"
                 />
               </div>
-              <p class="text-sm text-gray-300 mt-1">
-                Balance: <img v-if="displayAmounts(toCrypto).icon" :src="displayAmounts(toCrypto).icon" :alt="toCrypto.toUpperCase()" class="w-3 h-3 inline mr-1 rounded-full" /> {{ formatBalance(props.balances[cryptos.find(c => c.symbol === toCrypto).balanceKey], cryptos.find(c => c.symbol === toCrypto).decimals) }} {{ toCrypto.toUpperCase() }}
+              <p class="text-xs text-gray-300 mt-1">
+                Balance: <img v-if="displayAmounts.icon" :src="displayAmounts.icon" :alt="toCrypto.toUpperCase()" class="w-3 h-3 inline mr-1 rounded-full" /> {{ exchangeToBalance }} {{ toCrypto.toUpperCase() }}
               </p>
             </div>
 
             <!-- Live Rate -->
-            <div class="text-sm text-gray-300">
+            <div class="text-xs text-gray-300 bg-gray-800 rounded-md p-2">
               <p>Live Rate: 1 {{ props.symbol.toUpperCase() }} = {{ liveRate.toFixed(8) }} {{ toCrypto.toUpperCase() }}</p>
             </div>
 
             <!-- Error/Success Messages -->
-            <div v-if="exchangeErrorMessage" class="text-red-400 text-sm">{{ exchangeErrorMessage }}</div>
-            <div v-if="exchangeSuccessMessage" class="text-green-400 text-sm">{{ exchangeSuccessMessage }}</div>
+            <div v-if="exchangeErrorMessage" class="text-red-400 text-xs">{{ exchangeErrorMessage }}</div>
+            <div v-if="exchangeSuccessMessage" class="text-green-400 text-xs">{{ exchangeSuccessMessage }}</div>
 
             <!-- Exchange Button -->
             <button
               @click="performExchange"
-              class="w-full bg-green-600 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-green-500 transition duration-200"
+              class="w-full bg-green-600 text-white font-semibold py-2.5 rounded-xl shadow-md hover:bg-green-500 transition duration-200 text-sm"
             >
               Exchange
             </button>
@@ -796,7 +948,6 @@ const performExchange = async () => {
 .tab-button {
   background: transparent !important;
   color: #fff !important;
-  border: none !important;
   outline: none !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -809,7 +960,7 @@ const performExchange = async () => {
 }
 
 /* Other buttons - keep original styling */
-button:not(.tab-button),
+button:not(.tab-button):not(.copy-address-btn),
 button[type="submit"]:not(.tab-button),
 button[type="button"]:not(.tab-button),
 .copy-btn,
@@ -818,7 +969,7 @@ button[type="button"]:not(.tab-button),
   color: #fff !important;
   transition: background 0.2s, color 0.2s;
 }
-button:not(.tab-button):hover,
+button:not(.tab-button):not(.copy-address-btn):hover,
 button[type="submit"]:not(.tab-button):hover,
 button[type="button"]:not(.tab-button):hover,
 .copy-btn:hover,

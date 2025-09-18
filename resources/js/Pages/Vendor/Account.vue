@@ -67,10 +67,10 @@ const selectAvatar = async (avatarPath) => {
       <h1 class="text-xl font-bold text-white text-center pt-4">Account</h1>
     </template>
 
-    <div class="py-6 bg-black min-h-screen">
+    <div class="py-2 bg-black min-h-screen sm:py-4">
       <div class="px-4 sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto">
         <!-- User Information Card -->
-        <div class="bg-black rounded-xl shadow-lg p-4 mb-4 border border-gray-800">
+        <div class="bg-black rounded-xl shadow-lg p-3 mb-2 border border-gray-800 sm:p-4 sm:mb-3">
           <h2 class="text-base font-semibold mb-4 text-white">User Information</h2>
           <div class="space-y-4">
             <div class="flex items-center bg-gray-900 rounded-lg p-3">
@@ -98,13 +98,13 @@ const selectAvatar = async (avatarPath) => {
         </div>
 
         <!-- Profile Actions Cards -->
-        <div class="space-y-4">
-          <div class="bg-black rounded-xl shadow-lg p-4 border border-gray-800">
-            <ul class="space-y-2">
+        <div class="space-y-2 sm:space-y-3">
+          <div class="bg-black rounded-xl shadow-lg p-3 border border-gray-800 sm:p-4">
+            <ul class="space-y-1 sm:space-y-2">
               <li>
                 <button
                   @click="editProfile"
-                  class="w-full flex items-center px-4 py-3 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                  class="w-full flex items-center px-3 py-2 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200 sm:px-4 sm:py-3"
                 >
                   <UserIcon class="h-5 w-5 mr-3 text-gray-400" />
                   <span class="text-sm font-medium">Edit Profile</span>
@@ -116,7 +116,7 @@ const selectAvatar = async (avatarPath) => {
               <li>
                 <button
                   @click="router.visit('/withdraw')"
-                  class="w-full flex items-center px-4 py-3 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                  class="w-full flex items-center px-3 py-2 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200 sm:px-4 sm:py-3"
                 >
                   <WalletIcon class="h-5 w-5 mr-3 text-gray-400" />
                   <span class="text-sm font-medium">Withdraw</span>
@@ -128,7 +128,7 @@ const selectAvatar = async (avatarPath) => {
               <li>
                 <button
                   @click="router.visit('/trade')"
-                  class="w-full flex items-center px-4 py-3 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                  class="w-full flex items-center px-3 py-2 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200 sm:px-4 sm:py-3"
                 >
                   <ChartBarIcon class="h-5 w-5 mr-3 text-gray-400" />
                   <span class="text-sm font-medium">Trade</span>
@@ -140,7 +140,7 @@ const selectAvatar = async (avatarPath) => {
               <li>
                 <button
                   @click="router.visit('/swap')"
-                  class="w-full flex items-center px-4 py-3 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                  class="w-full flex items-center px-3 py-2 text-left text-white hover:bg-gray-800 rounded-lg transition-colors duration-200 sm:px-4 sm:py-3"
                 >
                   <ArrowsRightLeftIcon class="h-5 w-5 mr-3 text-gray-400" />
                   <span class="text-sm font-medium">Swap</span>
@@ -151,10 +151,10 @@ const selectAvatar = async (avatarPath) => {
               </li>
             </ul>
           </div>
-          <div class="bg-black rounded-xl shadow-lg p-4 border border-gray-800">
+          <div class="bg-black rounded-xl shadow-lg p-3 border border-gray-800 sm:p-4">
             <button
               @click="logout"
-              class="w-full flex items-center px-4 py-3 text-left text-red-400 hover:bg-red-900 hover:text-white rounded-lg transition-colors duration-200"
+              class="w-full flex items-center px-3 py-2 text-left text-red-400 hover:bg-red-900 hover:text-white rounded-lg transition-colors duration-200 sm:px-4 sm:py-3"
             >
               <ArrowRightOnRectangleIcon class="h-5 w-5 mr-3" />
               <span class="text-sm font-medium">Logout</span>

@@ -10,6 +10,7 @@ export const useCryptoStore = defineStore('crypto', {
         changes: {},
         chartData: {},
         currency: 'USD', // Default currency
+        autoRefreshInterval: null, // Store interval ID
     }),
 
     actions: {
@@ -68,7 +69,14 @@ export const useCryptoStore = defineStore('crypto', {
 
         startAutoRefresh() {
             this.fetchTop10CryptoData(); // Initial fetch
-            setInterval(() => this.fetchTop10CryptoData(), 60000);
+            this.autoRefreshInterval = setInterval(() => this.fetchTop10CryptoData(), 60000);
+        },
+
+        stopAutoRefresh() {
+            if (this.autoRefreshInterval) {
+                clearInterval(this.autoRefreshInterval);
+                this.autoRefreshInterval = null;
+            }
         },
 
         setCurrency(currency) {

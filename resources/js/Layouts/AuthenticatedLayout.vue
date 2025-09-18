@@ -30,7 +30,7 @@ const sidebarOpen = ref(false);
 let activityInterval = null;
 
 // Check if current page is TradeView or DepositDetails
-const isFullScreenPage = computed(() => ['Vendor/TradeView', 'Vendor/DepositDetails'].includes(page.component));
+const isFullScreenPage = computed(() => ['Vendor/TradeView', 'Vendor/DepositDetails', 'Vendor/Withdraw'].includes(page.component));
 
 // Function to send last activity to backend silently
 const sendLastActivity = () => {

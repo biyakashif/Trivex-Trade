@@ -23,6 +23,11 @@ Broadcast::channel('online-users', function ($user) {
     return Auth::check();
 });
 
+// User-specific channel for balance updates
+Broadcast::channel('user.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
+});
+
 
 
 // Broadcast::channel('admin.users', function ($user) {

@@ -241,6 +241,13 @@ class AdminController extends Controller
             } elseif ($wallet->symbol === 'eth') {
                 $balance->increment('eth_balance', $wallet->amount);
             }
+
+            // Broadcast balance update to the user
+            broadcast(new \App\Events\BalanceUpdated($wallet->user_id, [
+                'usdt_balance' => $balance->usdt_balance,
+                'btc_balance' => $balance->btc_balance,
+                'eth_balance' => $balance->eth_balance,
+            ]))->toOthers();
         } elseif ($action === 'reject') {
             $wallet->update(['status' => 'rejected']);
         }
@@ -283,6 +290,13 @@ class AdminController extends Controller
             $balance->decrement($balanceColumn, $amount);
             $actionText = 'subtracted from';
         }
+
+        // Broadcast balance update to the user
+        broadcast(new \App\Events\BalanceUpdated($userId, [
+            'usdt_balance' => $balance->usdt_balance,
+            'btc_balance' => $balance->btc_balance,
+            'eth_balance' => $balance->eth_balance,
+        ]))->toOthers();
 
         return redirect()->back()->with('success', "Successfully {$actionText} {$amount} from {$crypto} balance.");
     }
