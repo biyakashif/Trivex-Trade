@@ -7,7 +7,6 @@ import { useCryptoStore } from '@/Store/crypto';
 import { formatBalance } from '@/utils/formatBalance';
 
 const page = usePage();
-const pageProps = page.props;
 
 const props = defineProps({
   balances: {
@@ -80,17 +79,24 @@ async function fetchWithdrawalHistory() {
 
 // Setup Echo listeners for real-time updates
 const setupEchoListeners = () => {
-  const userId = pageProps.auth?.user?.id;
-
+  const userId = page?.props?.auth?.user?.id;
+  
+  console.log('Withdraw - Setting up Echo listeners...');
+  console.log('Withdraw - User ID:', userId);
+  console.log('Withdraw - Window.Echo:', window.Echo);
+  console.log('Withdraw - Page props auth:', page?.props?.auth);
+  
   if (!userId || !window.Echo) {
-    console.warn('User ID or Echo not available for real-time updates');
+    console.warn('Withdraw - User ID or Echo not available for real-time updates');
     return;
   }
+
+  console.log('Withdraw - Setting up Echo listener for user:', userId);
 
   // Balance updates listener
   balanceEchoListener = window.Echo.private(`user.${userId}`)
     .listen('.balance.updated', (data) => {
-      console.log('Balance updated via Echo:', data);
+      console.log('Withdraw - Balance updated via Echo:', data);
       if (data.balances) {
         liveBalances.value = {
           usdt_balance: data.balances.usdt_balance || 0,
@@ -103,7 +109,7 @@ const setupEchoListeners = () => {
   // Withdrawal history updates
   withdrawalEchoListener = window.Echo.private(`user.${userId}`)
     .listen('.withdrawal.updated', (data) => {
-      console.log('Withdrawal updated via Echo:', data);
+      console.log('Withdraw - Withdrawal updated via Echo:', data);
       fetchWithdrawalHistory(); // Refresh withdrawal history
     });
 };
@@ -162,6 +168,7 @@ const submitWithdrawal = async () => {
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json',
+        'X-CSRF-TOKEN': csrfToken ? csrfToken.getAttribute('content') : '',
       },
     });
 
@@ -181,14 +188,21 @@ const submitWithdrawal = async () => {
         messageType.value = '';
       }, 5000);
 
-      // Reset form
-      form.reset();
+      // Immediately update local balance for real-time display
       if (activeTab.value === 'crypto') {
-        selectedCoinId.value = props.coinTypes[0]?.id || null;
+        const balanceKey = `${selectedCoin.value.symbol}_balance`;
+        const currentAmount = Number(liveBalances.value[balanceKey]) || 0;
+        liveBalances.value = {
+          ...liveBalances.value,
+          [balanceKey]: currentAmount - amount,
+        };
+      } else if (activeTab.value === 'bank') {
+        const currentAmount = Number(liveBalances.value.usdt_balance) || 0;
+        liveBalances.value = {
+          ...liveBalances.value,
+          usdt_balance: currentAmount - amount,
+        };
       }
-      
-      // Refresh withdrawal history
-      fetchWithdrawalHistory();
     } else {
       // Handle validation errors or server errors
       let errorMessage = 'An error occurred while processing your withdrawal request.';
@@ -348,7 +362,7 @@ onUnmounted(() => {
   }
 
   // Leave the private channel
-  const userId = pageProps.auth?.user?.id;
+  const userId = page?.props?.auth?.user?.id;
   if (userId && window.Echo) {
     window.Echo.leave(`user.${userId}`);
   }

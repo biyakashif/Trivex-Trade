@@ -56,7 +56,7 @@ const minimumAmounts = {
 
 // Computed properties for form
 const priceRange = computed(() => {
-  const range = direction.value === 'up' ? profitPercentages[deliveryTime.value] * 100 : profitPercentages[deliveryTime.value] * 100 / 2;
+  const range = profitPercentages[deliveryTime.value] * 100;
   return range.toFixed(2); // Format to 2 decimal places
 });
 const expectedReturn = computed(() => {
@@ -289,6 +289,14 @@ const strokeDashoffset = computed(() => {
   return circumference * (1 - progress);
 });
 
+const tradePriceRange = computed(() => {
+  if (!tradeResult.value || !tradeResult.value.delivery_time) return '0.00';
+  const perc = profitPercentages[tradeResult.value.delivery_time];
+  if (!perc) return '0.00';
+  const range = perc * 100;
+  return range.toFixed(2);
+});
+
 // Computed property to detect large screens
 const $screenIsLarge = computed(() => window.innerWidth >= 1024);
 </script>
@@ -360,7 +368,7 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
               </div>
             </div>
             <div class="w-full mb-3 sm:mb-6 flex flex-col">
-              <div class="h-64 sm:h-80 md:h-96 lg:h-[24rem] flex">
+              <div class="h-80 sm:h-96 md:h-[28rem] lg:h-[28rem] flex">
                 <iframe
                   id="tradingview_chart"
                   :src="widgetUrl"
@@ -710,8 +718,8 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
             </svg>
             <!-- Profit or Loss text in the center -->
             <div class="absolute inset-0 flex items-center justify-center">
-              <span v-if="tradeResult && !tradeResult.lossApplied" class="text-xs sm:text-sm font-bold text-green-400">USDT {{ tradeResult.profit_earned.toFixed(2) }}</span>
-              <span v-else class="text-lg sm:text-xl font-bold text-red-500">LOSS</span>
+              <span v-if="tradeResult && !tradeResult.lossApplied" class="text-lg sm:text-xl font-bold text-green-400">USDT {{ tradeResult.profit_earned.toFixed(2) }} ({{ tradePriceRange }}%)</span>
+              <span v-else class="text-lg sm:text-xl font-bold text-red-500">-USDT {{ tradeResult.trade_amount.toFixed(2) }} ({{ tradePriceRange }}%)</span>
             </div>
           </div>
           <div class="mt-4 bent-card relative bg-gradient-to-br from-[#23262F] via-[#23262F] to-[#181A20] shadow-lg rounded-2xl px-6 py-4 border border-gray-700/70">
@@ -735,6 +743,10 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
               <li class="flex justify-between items-center py-1 first:pt-0 last:pb-0">
                 <span class="text-xs font-normal text-gray-300">Trade Direction</span>
                 <span class="font-medium">{{ tradeResult ? (tradeResult.direction === 'up' ? 'Rise' : 'Fall') : 'N/A' }}</span>
+              </li>
+              <li class="flex justify-between items-center py-1 first:pt-0 last:pb-0">
+                <span class="text-xs font-normal text-gray-300">Price Range</span>
+                <span class="font-medium">{{ tradePriceRange }}%</span>
               </li>
               <li v-if="tradeResult && tradeResult.lossApplied" class="flex justify-between items-center py-1 first:pt-0 last:pb-0">
                 <span class="text-xs font-normal text-gray-300">Loss Amount</span>

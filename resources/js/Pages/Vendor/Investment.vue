@@ -124,11 +124,6 @@ const goBack = () => {
   <Head title="Grow Your Investment" />
 
   <AuthenticatedLayout>
-    <button @click="goBack" class="flex items-center space-x-2 text-white mb-3 hover:text-gray-300 sm:mb-4">
-      <ArrowLeftIcon class="h-4 w-4 sm:h-5 sm:w-5" />
-      <span class="text-sm sm:text-base">Back</span>
-    </button>
-
     <div class="max-w-2xl mx-auto pt-2 py-4 px-2 sm:max-w-full sm:px-4 lg:px-6 sm:pt-4 sm:py-6">
       <div class="flex items-center justify-center space-x-2">
         <ArrowUpIcon class="h-5 w-5 text-green-400 sm:h-6 sm:w-6" />

@@ -763,7 +763,7 @@ const performExchange = async () => {
               <div v-else-if="withdrawHistory.length === 0" class="text-gray-400 text-xs">
                 No withdrawal history available.
               </div>
-              <div v-else class="space-y-1.5 max-h-32 overflow-y-auto">
+              <div v-else class="space-y-1.5">
                 <div v-for="withdrawal in withdrawHistory.slice(0, 3)" :key="withdrawal.id" class="border border-gray-800 rounded-md p-2 text-xs bg-black">
                   <div class="flex justify-between">
                     <span class="text-white font-medium">{{ withdrawal.symbol.toUpperCase() }}</span>

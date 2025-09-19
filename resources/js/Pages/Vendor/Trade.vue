@@ -142,11 +142,6 @@ onUnmounted(() => {
   <Head title="Trade" />
 
   <AuthenticatedLayout>
-    <button @click="goBack" class="flex items-center space-x-2 text-white mb-4 hover:text-gray-300">
-      <ArrowLeftIcon class="h-5 w-5" />
-      <span>Back</span>
-    </button>
-
     <div class="text-gray-900 pt-4">
       <!-- Crypto Table: Mobile (<lg) -->
       <div class="lg:hidden px-4 pt-4">
