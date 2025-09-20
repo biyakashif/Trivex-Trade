@@ -13,6 +13,11 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
+        // For Inertia.js requests, return null to let Inertia handle the redirect
+        if ($request->header('X-Inertia')) {
+            return null;
+        }
+
         return $request->expectsJson() ? null : route('login');
     }
 

@@ -2,7 +2,7 @@
     <div class="fixed bottom-20 right-0 z-[200]">
         <button
             @click="openTelegramChat"
-            class="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-all duration-200 focus:outline-none flex items-center justify-center space-x-2"
+            class="bg-blue-600 text-white rounded-full p-2 shadow-lg hover:bg-blue-700 transition-all duration-200 focus:outline-none flex items-center justify-center space-x-2"
             aria-label="Open Telegram Chat"
         >
             <span class="text-sm font-medium animate-pulse-opacity">Help</span>

@@ -1,6 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted } from 'vue';
 
 // Define props to receive grouped wallet data, selected user ID, and balances
@@ -17,6 +17,10 @@ const props = defineProps({
     type: [String, Number],
     default: null,
   },
+  selectedUser: {
+    type: Object,
+    default: null,
+  },
   balances: {
     type: Object,
     default: () => ({
@@ -26,6 +30,9 @@ const props = defineProps({
     }),
   },
 });
+
+// Get the page instance for flash messages
+const $page = usePage();
 
 // Safely parse balance values to numbers
 const parseBalance = (value, decimals) => {
@@ -56,10 +63,11 @@ const amounts = ref({
 
 // Polling interval ID
 let pollingInterval = null;
+let isUpdatingBalance = false; // Flag to prevent polling during updates
 
 // Function to fetch updated balances
 const fetchBalances = async () => {
-  if (!props.selectedUserId) return;
+  if (!props.selectedUserId || isUpdatingBalance) return;
   try {
     const response = await fetch(`/admin/update-wallet?user_id=${props.selectedUserId}`, {
       headers: {
@@ -116,10 +124,17 @@ onUnmounted(() => {
   if (pollingInterval) {
     clearInterval(pollingInterval);
   }
+  isUpdatingBalance = false; // Reset flag on unmount
 });
 
-// Computed property to get the selected user's name (if available)
+// Computed property to get the selected user's name and email (if available)
 const selectedUserName = () => {
+  // First try to get from selectedUser prop
+  if (props.selectedUser) {
+    return props.selectedUser.name || 'Unknown';
+  }
+
+  // Fallback to wallet data
   if (props.selectedUserId && localGroupedWallets.value.usdt.length > 0) {
     return localGroupedWallets.value.usdt[0].user?.name || 'Unknown';
   }
@@ -128,6 +143,25 @@ const selectedUserName = () => {
   }
   if (props.selectedUserId && localGroupedWallets.value.eth.length > 0) {
     return localGroupedWallets.value.eth[0].user?.name || 'Unknown';
+  }
+  return null;
+};
+
+const selectedUserEmail = () => {
+  // First try to get from selectedUser prop
+  if (props.selectedUser) {
+    return props.selectedUser.email || null;
+  }
+
+  // Fallback to wallet data
+  if (props.selectedUserId && localGroupedWallets.value.usdt.length > 0) {
+    return localGroupedWallets.value.usdt[0].user?.email || null;
+  }
+  if (props.selectedUserId && localGroupedWallets.value.btc.length > 0) {
+    return localGroupedWallets.value.btc[0].user?.email || null;
+  }
+  if (props.selectedUserId && localGroupedWallets.value.eth.length > 0) {
+    return localGroupedWallets.value.eth[0].user?.email || null;
   }
   return null;
 };
@@ -168,7 +202,6 @@ const updateWalletStatus = (walletId, action) => {
     },
     onError: (errors) => {
       console.error('Error updating wallet status:', errors);
-      alert('Error updating wallet status: ' + JSON.stringify(errors));
       fetchBalances(); // Fetch the latest balances in case of an error
     },
   });
@@ -178,12 +211,14 @@ const updateWalletStatus = (walletId, action) => {
 const updateBalance = (crypto, action) => {
   const amount = parseFloat(amounts.value[crypto]);
   if (isNaN(amount) || amount === 0) {
-    alert('Please enter a valid amount.');
     return;
   }
 
   const balanceKey = `${crypto}_balance`;
   const decimals = crypto === 'usdt' ? 2 : 8;
+
+  // Set flag to prevent polling during update
+  isUpdatingBalance = true;
 
   router.post(route('admin.update-wallet.balance', { userId: props.selectedUserId }), {
     crypto,
@@ -200,11 +235,16 @@ const updateBalance = (crypto, action) => {
         liveBalances.value[balanceKey] = parseFloat((liveBalances.value[balanceKey] - amount).toFixed(decimals));
       }
       amounts.value[crypto] = ''; // Reset the input field
+
+      // Resume polling after a short delay to allow server to process
+      setTimeout(() => {
+        isUpdatingBalance = false;
+      }, 2000); // Wait 2 seconds before resuming polling
     },
     onError: (errors) => {
       console.error('Error updating balance:', errors);
-      alert('Error updating balance: ' + JSON.stringify(errors));
       fetchBalances(); // Fetch the latest balances in case of an error
+      isUpdatingBalance = false; // Reset flag on error
     },
   });
 };
@@ -218,18 +258,11 @@ const updateBalance = (crypto, action) => {
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
           <h1 class="text-2xl font-bold mb-4">
             Update Wallet
-            <span v-if="selectedUserId && selectedUserName()" class="text-lg font-semibold text-gray-600">
+            <span v-if="selectedUserId && selectedUserName()" class="text-lg font-semibold text-gray-600 block mt-1">
               for {{ selectedUserName() }}
+              <span v-if="selectedUserEmail()" class="text-sm text-gray-500">({{ selectedUserEmail() }})</span>
             </span>
           </h1>
-
-          <!-- Success/Error Messages -->
-          <div v-if="$page.props.flash?.success" class="mb-4 p-2 bg-green-100 text-green-800 rounded-md text-sm">
-            {{ $page.props.flash.success }}
-          </div>
-          <div v-if="$page.props.flash?.error" class="mb-4 p-2 bg-red-100 text-red-800 rounded-md text-sm">
-            {{ $page.props.flash.error }}
-          </div>
 
           <!-- Balances Section -->
           <div v-if="selectedUserId" class="mb-6">
@@ -509,3 +542,15 @@ const updateBalance = (crypto, action) => {
     </div>
   </AdminLayout>
 </template>
+
+<style scoped>
+/* Custom button styles */
+.action-btn {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.action-btn:hover {
+  background-color: #2563eb;
+}
+</style>

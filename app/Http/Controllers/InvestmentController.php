@@ -91,17 +91,27 @@ class InvestmentController extends Controller
         $balance->usdt_balance -= $amount;
         $balance->save();
 
-        return response()->json([
-            'investment' => [
-                'id' => $investment->id,
-                'plan' => $investment->plan,
-                'amount' => $investment->amount,
-                'profit' => $investment->profit,
-                'starts_at' => $investment->starts_at->toDateTimeString(),
-                'ends_at' => $investment->ends_at->toDateTimeString(),
-                'status' => $investment->status,
-            ],
-        ], 200);
+        // Return appropriate response based on request type
+        if ($request->header('X-Inertia')) {
+            // For Inertia requests, return a redirect back with success message
+            return redirect()->back()->with('success', 'Investment started successfully.');
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'investment' => [
+                    'id' => $investment->id,
+                    'plan' => $investment->plan,
+                    'amount' => $investment->amount,
+                    'profit' => $investment->profit,
+                    'starts_at' => $investment->starts_at->toDateTimeString(),
+                    'ends_at' => $investment->ends_at->toDateTimeString(),
+                    'status' => $investment->status,
+                ],
+            ], 200);
+        }
+
+        return redirect()->route('investment')->with('success', 'Investment started successfully.');
     }
 
     protected function completeInvestment($investment)

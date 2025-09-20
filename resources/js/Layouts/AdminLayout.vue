@@ -1,6 +1,6 @@
 <script setup>
 import { Link, usePage, router } from '@inertiajs/vue3';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import AdminSidebar from '@/Components/AdminSidebar.vue';
 
 const user = usePage().props.auth.user;
@@ -8,11 +8,51 @@ const isRegistrationDisabled = ref(false);
 const sidebarOpen = ref(false);
 let activityInterval = null;
 
+// Flash message state for auto-disappear
+const flashMessage = ref({
+  type: null, // 'success' or 'error'
+  message: '',
+  show: false,
+});
+
+
+// --- ADMIN CONSOLE LOGS ---
+// All admin-side logs will appear in the browser console for debugging
+function adminLog(...args) {
+    console.log('[ADMIN]', ...args);
+}
+function adminError(...args) {
+    console.error('[ADMIN]', ...args);
+}
+
+// Function to show flash messages with auto-disappear
+const showFlashMessage = (type, message) => {
+  flashMessage.value = {
+    type,
+    message,
+    show: true,
+  };
+
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    flashMessage.value.show = false;
+  }, 5000);
+};
+
+// Watch for page flash messages and display them
+watch(() => usePage().props.flash, (newFlash) => {
+  if (newFlash?.success) {
+    showFlashMessage('success', newFlash.success);
+  } else if (newFlash?.error) {
+    showFlashMessage('error', newFlash.error);
+  }
+}, { immediate: true });
+
 const safeRoute = (routeName) => {
     try {
         return route(routeName);
     } catch (error) {
-        console.error(`Route ${routeName} not found:`, error);
+        adminError(`Route ${routeName} not found:`, error);
         return '#';
     }
 };
@@ -27,14 +67,14 @@ const fetchRegistrationStatus = async () => {
         });
         const data = await response.json();
         isRegistrationDisabled.value = data.registrationDisabled;
-        console.log('Fetched registration status:', isRegistrationDisabled.value);
+        adminLog('Fetched registration status:', isRegistrationDisabled.value);
     } catch (error) {
-        console.error('Error fetching registration status:', error);
+        adminError('Error fetching registration status:', error);
     }
 };
 
 const updateRegistrationStatus = () => {
-    console.log('Updating registration status to:', isRegistrationDisabled.value);
+    adminLog('Updating registration status to:', isRegistrationDisabled.value);
     router.post(
         '/admin/settings/registration-status',
         { registrationDisabled: isRegistrationDisabled.value },
@@ -42,10 +82,10 @@ const updateRegistrationStatus = () => {
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
-                console.log('Registration status updated:', isRegistrationDisabled.value);
+                adminLog('Registration status updated:', isRegistrationDisabled.value);
             },
             onError: (errors) => {
-                console.error('Error updating registration status:', errors);
+                adminError('Error updating registration status:', errors);
                 isRegistrationDisabled.value = !isRegistrationDisabled.value; // Revert on error
             },
         }
@@ -53,13 +93,15 @@ const updateRegistrationStatus = () => {
 };
 
 const logout = () => {
+    adminLog('Logging out...');
     router.post('/logout', {}, {
         preserveState: false,
         onSuccess: () => {
+            adminLog('Logout successful');
             router.visit('/', { method: 'get' });
         },
         onError: (errors) => {
-            console.error('Logout failed:', errors);
+            adminError('Logout failed:', errors);
         },
     });
 };
@@ -68,21 +110,57 @@ const toggleSidebar = () => {
     sidebarOpen.value = !sidebarOpen.value;
 };
 
+// Function to send last activity to backend silently (like AuthenticatedLayout)
+const sendLastActivity = () => {
+    if (!user || !user.id) {
+        if (activityInterval) {
+            clearInterval(activityInterval);
+            activityInterval = null;
+        }
+        return;
+    }
+    fetch('/update-last-activity', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        },
+        credentials: 'same-origin',
+    })
+    .then((response) => {
+        if (response.status === 200) {
+            adminLog('Last activity updated');
+        }
+        if (response.status === 401 || response.status === 419) {
+            if (activityInterval) {
+                clearInterval(activityInterval);
+                activityInterval = null;
+            }
+            adminError('Session expired or unauthorized. Reloading...');
+            window.location.reload();
+        } else if (response.status >= 400) {
+            if (activityInterval) {
+                clearInterval(activityInterval);
+                activityInterval = null;
+            }
+            adminError('Failed to update last_activity. Stopping interval.');
+        }
+    })
+    .catch((err) => {
+        if (activityInterval) {
+            clearInterval(activityInterval);
+            activityInterval = null;
+        }
+        adminError('Error sending last activity:', err);
+    });
+};
+
 onMounted(() => {
     fetchRegistrationStatus();
     if (user && user.id) {
-        activityInterval = setInterval(() => {
-            router.post('/update-last-activity', {}, {
-                preserveScroll: true,
-                preserveState: true,
-                onSuccess: () => {
-                    console.log('Last activity updated');
-                },
-                onError: (errors) => {
-                    console.error('Failed to update last_activity:', errors);
-                },
-            });
-        }, 30000);
+        sendLastActivity();
+        activityInterval = setInterval(sendLastActivity, 60000);
     }
 });
 
@@ -135,11 +213,28 @@ onUnmounted(() => {
             </div>
         </nav>
         <main :class="{ 'lg:ml-64': sidebarOpen }">
-            <div v-if="$page.props.flash?.success" class="mb-4 p-2 bg-green-100 text-green-800 rounded-md text-sm">
-                {{ $page.props.flash.success }}
-            </div>
-            <div v-if="$page.props.flash?.error" class="mb-4 p-2 bg-red-100 text-red-800 rounded-md text-sm">
-                {{ $page.props.flash.error }}
+            <!-- Auto-disappearing Flash Messages -->
+            <div
+              v-if="flashMessage.show"
+              :class="[
+                'mb-4 p-4 rounded-md text-sm font-medium transition-all duration-300 ease-in-out transform mx-6 lg:mx-8',
+                flashMessage.type === 'success'
+                  ? 'bg-green-100 text-green-800 border-l-4 border-green-500'
+                  : 'bg-red-100 text-red-800 border-l-4 border-red-500'
+              ]"
+              style="animation: slideIn 0.3s ease-out;"
+            >
+              <div class="flex items-center justify-between">
+                <span>{{ flashMessage.message }}</span>
+                <button
+                  @click="flashMessage.show = false"
+                  class="ml-4 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <slot />
@@ -162,5 +257,25 @@ onUnmounted(() => {
 }
 main {
     transition: margin-left 300ms ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
 }
 </style>

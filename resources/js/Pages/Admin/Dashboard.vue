@@ -76,11 +76,22 @@ const subscribeToOnlineUsers = () => {
             if (event.user_id && typeof event.is_online === 'boolean' && event.user_id !== 1) { // Exclude admin (user_id 1)
                 const userIndex = onlineUsers.value.findIndex(u => u.id === event.user_id);
                 if (event.is_online && userIndex === -1) {
-                    onlineUsers.value.push({
-                        id: event.user_id,
-                        name: event.name || `User ${event.user_id}`,
-                        email: event.email || `user${event.user_id}@example.com`,
-                    });
+                    // Only add user if we have valid name and email data
+                    if (event.name && event.email) {
+                        onlineUsers.value.push({
+                            id: event.user_id,
+                            name: event.name,
+                            email: event.email,
+                        });
+                    } else {
+                        // Fallback to placeholder if data is missing (shouldn't happen with the fix)
+                        console.warn('Missing user data in Pusher event:', event);
+                        onlineUsers.value.push({
+                            id: event.user_id,
+                            name: `User ${event.user_id}`,
+                            email: `user${event.user_id}@example.com`,
+                        });
+                    }
                 } else if (!event.is_online && userIndex !== -1) {
                     onlineUsers.value.splice(userIndex, 1);
                 }

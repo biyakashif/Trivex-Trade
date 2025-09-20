@@ -182,6 +182,7 @@ class AdminController extends Controller
         ];
 
         $balances = null;
+        $selectedUser = null;
         if ($userId) {
             $balance = Balance::where('user_id', $userId)->first();
             $balances = $balance ? [
@@ -193,6 +194,16 @@ class AdminController extends Controller
                 'btc_balance' => 0,
                 'eth_balance' => 0,
             ];
+
+            // Fetch the selected user data
+            $selectedUser = User::find($userId);
+            if ($selectedUser) {
+                $selectedUser = [
+                    'id' => $selectedUser->id,
+                    'name' => $selectedUser->name,
+                    'email' => $selectedUser->email,
+                ];
+            }
         }
 
         if ($request->wantsJson()) {
@@ -200,6 +211,7 @@ class AdminController extends Controller
                 'props' => [
                     'groupedWallets' => $groupedWallets,
                     'selectedUserId' => $userId,
+                    'selectedUser' => $selectedUser,
                     'balances' => $balances,
                 ],
             ]);
@@ -208,6 +220,7 @@ class AdminController extends Controller
         return Inertia::render('Admin/UpdateWallet', [
             'groupedWallets' => $groupedWallets,
             'selectedUserId' => $userId,
+            'selectedUser' => $selectedUser,
             'balances' => $balances,
         ]);
     }
@@ -744,9 +757,21 @@ public function showUserIpLocation(Request $request)
 
     public function getDeletedUsers(Request $request)
     {
+        \Log::info('getDeletedUsers called', [
+            'user' => \Auth::check() ? \Auth::user()->toArray() : 'Not authenticated',
+            'method' => $request->method(),
+            'url' => $request->fullUrl(),
+            'wants_json' => $request->wantsJson(),
+        ]);
+
         $deletedUsers = DeletedUser::with('deletedByAdmin')
             ->orderBy('deleted_at', 'desc')
             ->paginate(25);
+
+        \Log::info('Deleted users query result', [
+            'count' => $deletedUsers->count(),
+            'total' => $deletedUsers->total(),
+        ]);
 
         if ($request->wantsJson()) {
             return response()->json($deletedUsers);

@@ -33,9 +33,9 @@ const updatePassword = () => {
 </script>
 
 <template>
-    <section class="bg-black rounded-lg p-6 shadow-md">
+    <section class="bg-black rounded-xl p-4 shadow-lg border border-gray-800">
         <header>
-            <h2 class="text-lg font-medium text-white">
+            <h2 class="text-lg font-semibold text-white">
                 Update Password
             </h2>
 
@@ -45,7 +45,7 @@ const updatePassword = () => {
             </p>
         </header>
 
-        <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
+        <form @submit.prevent="updatePassword" class="mt-4 space-y-4">
             <div>
                 <InputLabel for="current_password" value="Current Password" class="text-white" />
 
@@ -134,5 +134,106 @@ const updatePassword = () => {
 }
 .action-btn:hover * {
     color: #181A20 !important;
+}
+
+/* Mobile-specific responsive adjustments */
+@media (max-width: 767px) {
+  /* Professional height management */
+  .min-h-screen {
+    min-height: 100vh !important;
+    min-height: 100dvh !important; /* Dynamic viewport height for mobile */
+  }
+  
+  /* Professional font hierarchy */
+  .text-lg {
+    font-size: 1rem !important; /* Professional section header */
+    line-height: 1.4rem !important;
+    font-weight: 600 !important;
+  }
+  
+  .text-sm {
+    font-size: 0.7rem !important; /* Smaller description text */
+    line-height: 0.95rem !important;
+    font-weight: 500 !important;
+  }
+  
+  /* Professional section padding */
+  .p-4 {
+    padding: 0.75rem !important; /* Compact padding */
+  }
+  
+  .p-6 {
+    padding: 1rem !important;
+  }
+  
+  /* Professional margins */
+  .mt-1 {
+    margin-top: 0.25rem !important;
+  }
+  
+  .mt-2 {
+    margin-top: 0.375rem !important;
+  }
+  
+  .mt-4 {
+    margin-top: 0.75rem !important; /* Tighter form spacing */
+  }
+  
+  .mt-6 {
+    margin-top: 1rem !important;
+  }
+  
+  /* Professional form spacing */
+  .space-y-4 > * + * {
+    margin-top: 0.75rem !important; /* Tighter field spacing */
+  }
+  
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+  
+  /* Professional button area */
+  .gap-4 {
+    gap: 0.75rem !important;
+  }
+  
+  /* Professional border radius */
+  .rounded-xl {
+    border-radius: 0.5rem !important; /* Modern look */
+  }
+  
+  .rounded-lg {
+    border-radius: 0.375rem !important;
+  }
+  
+  .rounded-md {
+    border-radius: 0.1875rem !important;
+  }
+  
+  /* Professional button styling */
+  .action-btn {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    padding-top: 0.375rem !important;
+    padding-bottom: 0.375rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    border-radius: 0.375rem !important;
+  }
+  
+  /* Professional shadow effects */
+  .shadow-lg {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  /* Professional border styling */
+  .border-gray-800 {
+    border-color: rgba(55, 65, 81, 0.8) !important;
+  }
+  
+  /* Professional transition effects */
+  .transition {
+    transition-duration: 0.15s !important; /* Faster transitions for mobile */
+  }
 }
 </style>

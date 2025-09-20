@@ -65,7 +65,7 @@ async function fetchLiveBalances() {
     };
   } catch (error) {
     if (error.name !== 'AbortError') {
-      console.error('Error fetching live balances:', error);
+      // Error fetching live balances
     }
   }
 }
@@ -115,11 +115,11 @@ async function fetchCryptoNews() {
       newsData.value = data.Data;
       displayNews();
     } else {
-      console.error('No news data received.');
+      // No news data received
     }
   } catch (error) {
     if (error.name !== 'AbortError') {
-      console.error('Error fetching news:', error);
+      // Error fetching news
     }
   }
 }
@@ -159,7 +159,7 @@ async function fetchAdminMessages() {
     }
   } catch (error) {
     if (error.name !== 'AbortError') {
-      console.error('Error fetching admin messages:', error);
+      // Error fetching admin messages
     }
   }
 }
@@ -230,7 +230,7 @@ onMounted(() => {
       },
     });
   } else {
-    console.error('Canvas context for cryptoChart not found');
+    // Canvas context for cryptoChart not found
   }
 });
 
@@ -288,7 +288,7 @@ onUnmounted(() => {
           <div class="flex items-center justify-between">
             <p class="text-2xl font-bold">{{ totalBalance }}</p>
             <button
-              @click.stop="showCryptoList = !showCryptoList; console.log('Toggle:', showCryptoList)"
+              @click.stop="showCryptoList = !showCryptoList"
               class="flex items-center bg-black border border-gray-700 hover:bg-gray-900 rounded-md px-2 py-1 text-sm font-semibold text-white transition-colors pointer-events-auto"
             >
               {{ cryptoStore.currency || 'USD' }}
@@ -317,7 +317,7 @@ onUnmounted(() => {
             <button
               v-for="crypto in ['USD', 'USDT', 'ETH', 'BTC']"
               :key="crypto"
-              @click.stop="() => { console.log('Selected:', crypto); cryptoStore.setCurrency(crypto); showCryptoList = false; }"
+              @click.stop="() => { cryptoStore.setCurrency(crypto); showCryptoList = false; }"
               class="block px-4 py-2 bg-black text-white hover:bg-gray-900 rounded w-full text-left text-sm pointer-events-auto border border-gray-700"
             >
               {{ crypto }}
@@ -516,6 +516,158 @@ main,
 
 .text-white {
   color: #fff !important;
+}
+
+/* Mobile-specific responsive adjustments */
+@media (max-width: 767px) {
+  /* Reduce font sizes for mobile */
+  .text-2xl {
+    font-size: 1.25rem !important; /* Reduced from default 1.5rem */
+    line-height: 1.75rem !important;
+  }
+  
+  .text-lg {
+    font-size: 1rem !important; /* Reduced from default 1.125rem */
+    line-height: 1.5rem !important;
+  }
+  
+  .text-sm {
+    font-size: 0.75rem !important; /* Reduced from default 0.875rem */
+    line-height: 1rem !important;
+  }
+  
+  .text-xs {
+    font-size: 0.625rem !important; /* Reduced from default 0.75rem */
+    line-height: 0.875rem !important;
+  }
+  
+  /* Reduce container padding and margins */
+  .px-4 {
+    padding-left: 0.75rem !important; /* Reduced from 1rem */
+    padding-right: 0.75rem !important;
+  }
+  
+  .py-2 {
+    padding-top: 0.375rem !important; /* Reduced from 0.5rem */
+    padding-bottom: 0.375rem !important;
+  }
+  
+  .py-4 {
+    padding-top: 0.75rem !important; /* Reduced from 1rem */
+    padding-bottom: 0.75rem !important;
+  }
+  
+  .py-6 {
+    padding-top: 1rem !important; /* Reduced from 1.5rem */
+    padding-bottom: 1rem !important;
+  }
+  
+  .pt-4 {
+    padding-top: 0.75rem !important; /* Reduced from 1rem */
+  }
+  
+  .pt-2 {
+    padding-top: 0.375rem !important; /* Reduced from 0.5rem */
+  }
+  
+  .mb-2 {
+    margin-bottom: 0.375rem !important; /* Reduced from 0.5rem */
+  }
+  
+  .mb-4 {
+    margin-bottom: 0.75rem !important; /* Reduced from 1rem */
+  }
+  
+  .mt-6 {
+    margin-top: 1rem !important; /* Reduced from 1.5rem */
+  }
+  
+  /* Reduce card padding */
+  .p-4 {
+    padding: 0.75rem !important; /* Reduced from 1rem */
+  }
+  
+  .p-5 {
+    padding: 0.875rem !important; /* Reduced from 1.25rem */
+  }
+  
+  /* Reduce card heights */
+  .h-32 {
+    height: 6rem !important; /* Reduced from 8rem */
+  }
+  
+  .h-64 {
+    height: 12rem !important; /* Reduced from 16rem */
+  }
+  
+  /* Reduce space between elements */
+  .space-y-4 > * + * {
+    margin-top: 0.75rem !important; /* Reduced from 1rem */
+  }
+  
+  .space-y-2 > * + * {
+    margin-top: 0.375rem !important; /* Reduced from 0.5rem */
+  }
+  
+  /* Reduce table cell padding */
+  .p-3 {
+    padding: 0.5rem !important; /* Reduced from 0.75rem */
+  }
+  
+  /* Reduce button sizes */
+  .px-2 {
+    padding-left: 0.375rem !important; /* Reduced from 0.5rem */
+    padding-right: 0.375rem !important;
+  }
+  
+  .py-1 {
+    padding-top: 0.25rem !important; /* Reduced from 0.25rem (keeping same) */
+    padding-bottom: 0.25rem !important;
+  }
+  
+  .py-2 {
+    padding-top: 0.375rem !important; /* Reduced from 0.5rem */
+    padding-bottom: 0.375rem !important;
+  }
+  
+  /* Reduce icon sizes */
+  .w-5 {
+    width: 1rem !important; /* Reduced from 1.25rem */
+    height: 1rem !important;
+  }
+  
+  .h-5 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+  
+  .w-6 {
+    width: 1.125rem !important; /* Reduced from 1.5rem */
+    height: 1.125rem !important;
+  }
+  
+  .h-6 {
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+  }
+  
+  /* Reduce select/input padding */
+  .p-2 {
+    padding: 0.375rem !important; /* Reduced from 0.5rem */
+  }
+  
+  /* Reduce border radius for more compact look */
+  .rounded-xl {
+    border-radius: 0.375rem !important; /* Reduced from 0.75rem */
+  }
+  
+  .rounded-lg {
+    border-radius: 0.25rem !important; /* Reduced from 0.5rem */
+  }
+  
+  .rounded-md {
+    border-radius: 0.1875rem !important; /* Reduced from 0.375rem */
+  }
 }
 
 /* Fade Transition for Messages and News */

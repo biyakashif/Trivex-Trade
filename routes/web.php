@@ -52,10 +52,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/live-balances', [DashboardController::class, 'getLiveBalances'])->name('live-balances');
     Route::get('/admin-messages', [DashboardController::class, 'getAdminMessages'])->name('admin.messages');
 
-    Route::post('/update-last-activity', function () {
+    Route::post('/update-last-activity', function (Request $request) {
         if (!Auth::check()) {
             Log::warning('No authenticated user for last_activity update');
-            return redirect()->back()->with('error', 'Not authenticated');
+            return response()->json(['error' => 'Not authenticated'], 401);
         }
 
         $user = Auth::user();
@@ -65,6 +65,11 @@ Route::middleware(['auth'])->group(function () {
         ]);
         $user->last_activity = now();
         $user->save();
+
+        // Return JSON response for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Last activity updated']);
+        }
 
         return redirect()->back();
     })->middleware(['web', 'auth']);
@@ -177,6 +182,8 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::post('/users/block/{id}', [AdminController::class, 'blockUser'])->name('admin.users.block');
         Route::post('/users/delete/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
         Route::post('/users/approve/{id}', [AdminController::class, 'approveUser'])->name('admin.users.approve');
+        Route::get('/deleted-users', [AdminController::class, 'getDeletedUsers'])->name('admin.deleted-users.index');
+        Route::post('/deleted-users/restore/{id}', [AdminController::class, 'restoreUser'])->name('admin.deleted-users.restore');
     });
 
 /**

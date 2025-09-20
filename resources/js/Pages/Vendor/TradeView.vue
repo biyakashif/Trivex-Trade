@@ -37,6 +37,9 @@ const deliveryTime = ref(60);
 const purchaseAmount = ref(0); // Changed default to 100
 const availableAssets = ref(0);
 
+// Store the delivery time used for the current trade
+const tradeDeliveryTime = ref(null);
+
 // Profit percentages and minimum amounts
 const profitPercentages = {
   30: 0.14,
@@ -201,6 +204,9 @@ const submitOrder = async () => {
     return;
   }
 
+  // Store the delivery time for this trade
+  tradeDeliveryTime.value = deliveryTime.value;
+
   router.post('/trade/store', {
     symbol: currentSymbol.value,
     direction: direction.value,
@@ -273,6 +279,7 @@ onMounted(async () => {
   if (props.trade) {
     tradeResult.value = props.trade;
     tradeResult.value.lossApplied = props.lossApplied;
+    tradeDeliveryTime.value = props.trade.delivery_time || 60; // Store delivery time
     showOrderForm.value = false;
     startTimer();
   }
@@ -290,8 +297,9 @@ const strokeDashoffset = computed(() => {
 });
 
 const tradePriceRange = computed(() => {
-  if (!tradeResult.value || !tradeResult.value.delivery_time) return '0.00';
-  const perc = profitPercentages[tradeResult.value.delivery_time];
+  const dt = tradeResult.value?.delivery_time || tradeDeliveryTime.value;
+  if (!dt) return '0.00';
+  const perc = profitPercentages[dt];
   if (!perc) return '0.00';
   const range = perc * 100;
   return range.toFixed(2);
@@ -329,7 +337,7 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
                     :aria-expanded="dropdownOpen ? 'true' : 'false'"
                   >
                     <div class="flex items-center space-x-2">
-                      <img :src="cryptoStore.getIcon((currentSymbol.value||'BTC').toLowerCase()) || 'https://via.placeholder.com/24'" :alt="currentSymbol" class="h-5 w-5 sm:h-6 sm:w-6 rounded-full" />
+                      <img :src="cryptoStore.getIcon((currentSymbol.value||'BTC').toLowerCase()) || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTIiIGZpbGw9IiM2MzY2ZjEiLz4KPC9zdmc+'" :alt="currentSymbol" class="h-5 w-5 sm:h-6 sm:w-6 rounded-full" />
                       <span class="font-semibold text-sm sm:text-base">{{ currentSymbol.toUpperCase() }}</span>
                       <span class="text-gray-400 text-xs sm:text-sm">/USDT</span>
                     </div>
@@ -351,7 +359,7 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
                       @click="selectCoin(coin.symbol)"
                       class="flex items-center px-2 sm:px-3 py-1 sm:py-2 hover:bg-[#f3f4f6] hover:text-[#181A20] cursor-pointer text-white transition-colors"
                     >
-                      <img :src="coin.icon || 'https://via.placeholder.com/24'" class="h-4 w-4 sm:h-5 sm:w-5 rounded-full mr-2 sm:mr-3" :alt="coin.symbol" />
+                      <img :src="coin.icon || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTIiIGZpbGw9IiM2MzY2ZjEiLz4KPC9zdmc+'" class="h-4 w-4 sm:h-5 sm:w-5 rounded-full mr-2 sm:mr-3" :alt="coin.symbol" />
                       <span class="flex-1 text-sm sm:text-base">{{ coin.symbol }}</span>
                       <span class="text-gray-400 text-xs sm:text-sm">/USDT</span>
                     </li>
@@ -718,10 +726,11 @@ const $screenIsLarge = computed(() => window.innerWidth >= 1024);
             </svg>
             <!-- Profit or Loss text in the center -->
             <div class="absolute inset-0 flex items-center justify-center">
-              <span v-if="tradeResult && !tradeResult.lossApplied" class="text-lg sm:text-xl font-bold text-green-400">USDT {{ tradeResult.profit_earned.toFixed(2) }} ({{ tradePriceRange }}%)</span>
-              <span v-else class="text-lg sm:text-xl font-bold text-red-500">-USDT {{ tradeResult.trade_amount.toFixed(2) }} ({{ tradePriceRange }}%)</span>
+              <span v-if="tradeResult && !tradeResult.lossApplied" class="text-xs sm:text-sm font-bold text-green-400">USDT {{ tradeResult.profit_earned.toFixed(2) }} ({{ tradePriceRange }}%)</span>
+              <span v-else class="text-xs sm:text-sm font-bold text-red-500">-USDT {{ tradeResult.trade_amount.toFixed(2) }} ({{ tradePriceRange }}%)</span>
             </div>
           </div>
+          <p v-if="tradeResult && tradeResult.lossApplied" class="mt-4 text-red-500 text-sm sm:text-base text-center">Sorry, you incurred a loss.</p>
           <div class="mt-4 bent-card relative bg-gradient-to-br from-[#23262F] via-[#23262F] to-[#181A20] shadow-lg rounded-2xl px-6 py-4 border border-gray-700/70">
             <!-- SVG mask for curved bent effect (modern, more pronounced) -->
             <svg class="absolute bottom-0 right-0 w-20 h-20 pointer-events-none select-none z-10" viewBox="0 0 80 80">

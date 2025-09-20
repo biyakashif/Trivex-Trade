@@ -56,14 +56,13 @@ export const useCryptoStore = defineStore('crypto', {
                     this.volumes[symbol] = (Math.random() * 1000000).toFixed(0); // Up to 1M
                 });
 
-                console.log('Coinbase data fetched:', this.prices);
             } catch (error) {
-                console.error("Error fetching crypto data from Coinbase:", error);
+                // Error fetching crypto data - silently handle
             }
         },
 
         async fetchChartData(symbol, days = 1) {
-            console.warn(`Chart data not available for ${symbol} via Coinbase API`);
+            // Chart data not available via Coinbase API
             this.chartData[symbol] = null;
         },
 

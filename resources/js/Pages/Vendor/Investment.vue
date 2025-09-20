@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, onMounted } from 'vue';
 import { ArrowUpIcon, ArrowLeftIcon } from '@heroicons/vue/24/solid';
 
@@ -54,42 +54,43 @@ const startInvestment = async () => {
   successMessage.value = '';
 
   try {
-    const response = await fetch('/investment/store', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-        'Accept': 'application/json',
+    const response = await router.post(route('investment.store'), {
+      plan: selectedPlan.value,
+      amount: parseFloat(investmentAmount.value),
+    }, {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: (page) => {
+        // Show success message
+        successMessage.value = 'Investment started successfully!';
+
+        // Update balance and active investments
+        usdtBalance.value -= parseFloat(investmentAmount.value);
+        // Add the new investment to the list if returned
+        if (page.props.investment) {
+          activeInvestments.value.unshift(page.props.investment);
+        }
+        showForm.value = false;
+        selectedPlan.value = null;
+        investmentAmount.value = '';
+
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          successMessage.value = '';
+        }, 5000);
       },
-      body: JSON.stringify({
-        plan: selectedPlan.value,
-        amount: parseFloat(investmentAmount.value),
-      }),
+      onError: (errors) => {
+        // Handle validation errors
+        if (errors) {
+          const errorMessages = Object.values(errors).flat();
+          errorMessage.value = errorMessages[0] || 'Validation error occurred.';
+        } else {
+          errorMessage.value = 'An error occurred while processing your investment.';
+        }
+      },
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to start investment');
-    }
-
-    // Show success message
-    successMessage.value = 'Investment started successfully!';
-
-    // Update balance and active investments
-    usdtBalance.value -= parseFloat(investmentAmount.value);
-    activeInvestments.value.unshift(data.investment);
-    showForm.value = false;
-    selectedPlan.value = null;
-    investmentAmount.value = '';
-
-    // Clear success message after 5 seconds
-    setTimeout(() => {
-      successMessage.value = '';
-    }, 5000);
   } catch (error) {
-    errorMessage.value = error.message;
+    errorMessage.value = 'Network error. Please try again later.';
   }
 };
 
@@ -134,7 +135,7 @@ const goBack = () => {
       <!-- Balance Section -->
       <div class="bg-black shadow-md rounded-lg p-3 mb-4 sm:p-4 sm:mb-6 border border-gray-800">
         <p class="text-xs text-gray-300 sm:text-sm">Current USDT Balance</p>
-        <p class="text-xl font-bold text-white sm:text-2xl">
+        <p class="text-lg font-bold text-white sm:text-2xl">
           {{ usdtBalance.toLocaleString('en-US', { minimumFractionDigits: 2 }) }} USDT
         </p>
       </div>

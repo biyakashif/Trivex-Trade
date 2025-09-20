@@ -119,14 +119,19 @@ class WithdrawController extends Controller
         }
 
         // Return appropriate response based on request type
+        if ($request->header('X-Inertia')) {
+            // For Inertia requests, return a redirect back with success message
+            return redirect()->back()->with('success', 'Withdrawal request submitted successfully.');
+        }
+
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'message' => 'Withdrawal request submitted successfully. Awaiting admin approval.',
+                'message' => 'Withdrawal request submitted successfully.',
                 'success' => true
             ]);
         }
 
-        return redirect()->route('withdraw')->with('success', 'Withdrawal request submitted successfully. Awaiting admin approval.');
+        return redirect()->route('withdraw')->with('success', 'Withdrawal request submitted successfully.');
     }
 
     public function history(Request $request)

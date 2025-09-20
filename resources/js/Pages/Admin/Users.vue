@@ -201,16 +201,6 @@ watch(showDeletedUsers, (newValue) => {
       <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-4 flex items-center">
           New Registered Users
-          <button
-            @click="showDeletedUsers = true"
-            class="ml-4 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm flex items-center"
-            title="View Deleted Users"
-          >
-            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-            </svg>
-            Deleted Users
-          </button>
         </h2>
 
         <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">

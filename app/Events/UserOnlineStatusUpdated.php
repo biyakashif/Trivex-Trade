@@ -34,9 +34,19 @@ class UserOnlineStatusUpdated implements ShouldBroadcast
 
     public function broadcastWith()
     {
+        $user = \App\Models\User::find($this->userId);
+        if (!$user) {
+            \Log::warning('UserOnlineStatusUpdated: User not found for event', [
+                'user_id' => $this->userId,
+                'is_online' => $this->isOnline,
+                'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5),
+            ]);
+        }
         return [
             'user_id' => $this->userId,
             'is_online' => $this->isOnline,
+            'name' => $user ? $user->name : null,
+            'email' => $user ? $user->email : null,
         ];
     }
 }

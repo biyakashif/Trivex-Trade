@@ -63,6 +63,14 @@ const cryptos = [
   { symbol: 'eth', balanceKey: 'eth_balance', decimals: 4, name: 'Ethereum' }
 ];
 
+// Function to format amounts with proper decimals
+const formatAmount = (amount, symbol) => {
+  const crypto = cryptos.find(c => c.symbol === symbol.toLowerCase());
+  if (!crypto) return amount;
+  const parsed = parseFloat(amount);
+  return isNaN(parsed) ? amount : parsed.toFixed(crypto.decimals);
+};
+
 // Tabs and Swap state
 const activeTab = ref('receive');
 const toCrypto = ref('usdt');
@@ -90,7 +98,7 @@ const remainingBalance = computed(() => {
   const amountToSwap = parseFloat(fromAmount.value) || 0;
   const remaining = currentBalance - amountToSwap;
   const decimals = cryptos.find(c => c.symbol === props.symbol).decimals;
-  return remaining >= 0 ? formatBalance(remaining, decimals) : formatBalance(0, decimals);
+  return remaining >= 0 ? formatAmount(remaining, props.symbol) : formatAmount(0, props.symbol);
 });
 
 // Computed property for exchange "To" balance
@@ -98,7 +106,7 @@ const exchangeToBalance = computed(() => {
   const crypto = cryptos.find(c => c.symbol === toCrypto.value);
   if (!crypto) return '0.00';
   const balance = Number(liveBalances.value[crypto.balanceKey]) || 0;
-  return formatBalance(balance, crypto.decimals);
+  return formatAmount(balance, toCrypto.value);
 });
 
 // Computed property to get the live rate (matching Swap.vue)
@@ -212,7 +220,6 @@ const copyAddress = async () => {
       }, 2000);
       return;
     } catch (err) {
-      console.error('Clipboard API failed:', err);
       copyError.value = 'Failed to copy address. Please copy manually.';
     }
   }
@@ -230,7 +237,6 @@ const copyAddress = async () => {
       isCopied.value = false;
     }, 2000);
   } catch (err) {
-    console.error('Fallback copy failed:', err);
     copyError.value = 'Failed to copy address. Please copy manually.';
   }
 };
@@ -246,7 +252,6 @@ const fetchHistory = async () => {
     history.value = data.deposits;
     historyError.value = null;
   } catch (error) {
-    console.error('Error fetching deposit history:', error);
     historyError.value = 'Failed to load deposit history. Please try again later.';
     history.value = [];
   }
@@ -269,7 +274,6 @@ const fetchWithdrawHistory = async () => {
     withdrawHistory.value = data.withdrawals;
     withdrawHistoryError.value = null;
   } catch (error) {
-    console.error('Error fetching withdrawal history:', error);
     withdrawHistoryError.value = 'Failed to load withdrawal history. Please try again later.';
     withdrawHistory.value = [];
   }
@@ -296,7 +300,7 @@ const fetchWithdrawHistory = async () => {
 //       };
 //     }
 //   } catch (error) {
-//     console.error('Error fetching balances:', error);
+//     // Error fetching balances - silently handle
 //   }
 // };
 
@@ -336,7 +340,7 @@ const currentCoin = computed(() => {
   return props.coinTypes.find(coin => coin.symbol === props.symbol);
 });
 
-// Submit Send form using fetch to stay on current page (no redirect)
+// Submit Send form using Inertia router (better for CSRF handling)
 const submitSend = async () => {
   // Clear previous messages
   sendErrorMessage.value = '';
@@ -371,63 +375,50 @@ const submitSend = async () => {
   sendProcessing.value = true;
 
   try {
-    // Create FormData for the request
-    const formData = new FormData();
-    formData.append('wallet_address', sendForm.wallet_address);
-    formData.append('amount_withdraw', sendForm.amount_withdraw);
-    formData.append('coin_id', currentCoin.value.id);
+    // Create data object for Inertia
+    const data = {
+      wallet_address: sendForm.wallet_address,
+      amount_withdraw: sendForm.amount_withdraw,
+      coin_id: currentCoin.value.id,
+    };
 
-    // Add CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]');
-    if (csrfToken) {
-      formData.append('_token', csrfToken.getAttribute('content'));
-    }
+    // Use Inertia router for better CSRF handling
+    router.post(route('withdraw.store'), data, {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: (page) => {
+        sendSuccessMessage.value = 'Withdrawal request submitted successfully!';
+        sendForm.reset();
+        fetchWithdrawHistory(); // Refresh withdrawal history
 
-    const response = await fetch(route('withdraw.store'), {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json',
+        // Immediately update local balance for real-time display
+        const balanceKey = `${props.symbol}_balance`;
+        const currentAmount = Number(liveBalances.value[balanceKey]) || 0;
+        liveBalances.value = {
+          ...liveBalances.value,
+          [balanceKey]: Math.max(0, currentAmount - amount)
+        };
+
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          sendSuccessMessage.value = '';
+        }, 5000);
+      },
+      onError: (errors) => {
+        // Handle validation errors
+        if (errors) {
+          const errorMessages = Object.values(errors).flat();
+          sendErrorMessage.value = errorMessages[0] || 'Validation error occurred.';
+        } else {
+          sendErrorMessage.value = 'An error occurred while processing your withdrawal request.';
+        }
+      },
+      onFinish: () => {
+        sendProcessing.value = false;
       },
     });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      sendSuccessMessage.value = data.message || 'Withdrawal request submitted successfully! Awaiting approval.';
-      sendForm.reset();
-      fetchWithdrawHistory(); // Refresh withdrawal history
-
-      // Immediately update local balance for real-time display
-      const balanceKey = `${props.symbol}_balance`;
-      const currentAmount = Number(liveBalances.value[balanceKey]) || 0;
-      liveBalances.value = {
-        ...liveBalances.value,
-        [balanceKey]: Math.max(0, currentAmount - amount)
-      };
-
-      // Clear success message after 5 seconds
-      setTimeout(() => {
-        sendSuccessMessage.value = '';
-      }, 5000);
-    } else {
-      // Handle validation errors
-      if (data.errors) {
-        const errorMessages = Object.values(data.errors).flat();
-        sendErrorMessage.value = errorMessages[0] || 'Validation error occurred.';
-      } else if (data.message) {
-        sendErrorMessage.value = data.message;
-      } else if (data.error) {
-        sendErrorMessage.value = data.error;
-      } else {
-        sendErrorMessage.value = 'An error occurred while processing your withdrawal request.';
-      }
-    }
   } catch (error) {
-    console.error('Network error:', error);
     sendErrorMessage.value = 'Network error. Please try again later.';
-  } finally {
     sendProcessing.value = false;
   }
 };
@@ -444,44 +435,32 @@ const usdtCoinId = computed(() => {
 const setupEchoListeners = () => {
   const userId = page?.props?.auth?.user?.id;
   
-  console.log('DepositDetails - Setting up Echo listeners...');
-  console.log('DepositDetails - User ID:', userId);
-  console.log('DepositDetails - Window.Echo:', window.Echo);
-  console.log('DepositDetails - Page props auth:', page?.props?.auth);
-  
   if (!userId || !window.Echo) {
-    console.warn('DepositDetails - User ID or Echo not available for real-time updates');
+    // User ID or Echo not available for real-time updates
     return;
   }
-
-  console.log('DepositDetails - Setting up Echo listener for user:', userId);
 
   // Balance updates listener
   balanceEchoListener = window.Echo.private(`user.${userId}`)
     .listen('.balance.updated', (data) => {
-      console.log('DepositDetails - Balance updated via Echo:', data);
-      console.log('DepositDetails - Current liveBalances before update:', liveBalances.value);
       if (data.balances) {
         liveBalances.value = {
           usdt_balance: data.balances.usdt_balance || 0,
           btc_balance: data.balances.btc_balance || 0,
           eth_balance: data.balances.eth_balance || 0,
         };
-        console.log('DepositDetails - Updated liveBalances:', liveBalances.value);
       }
     });
 
   // Deposit history updates (if needed)
   depositEchoListener = window.Echo.private(`user.${userId}`)
     .listen('.deposit.updated', (data) => {
-      console.log('DepositDetails - Deposit updated via Echo:', data);
       fetchHistory(); // Refresh deposit history
     });
 
   // Withdrawal history updates (if needed)
   withdrawEchoListener = window.Echo.private(`user.${userId}`)
     .listen('.withdrawal.updated', (data) => {
-      console.log('DepositDetails - Withdrawal updated via Echo:', data);
       fetchWithdrawHistory(); // Refresh withdrawal history
     });
 };
@@ -763,8 +742,8 @@ const performExchange = async () => {
               <div v-else-if="withdrawHistory.length === 0" class="text-gray-400 text-xs">
                 No withdrawal history available.
               </div>
-              <div v-else class="space-y-1.5">
-                <div v-for="withdrawal in withdrawHistory.slice(0, 3)" :key="withdrawal.id" class="border border-gray-800 rounded-md p-2 text-xs bg-black">
+              <div v-else class="space-y-1.5 max-h-60 overflow-y-auto">
+                <div v-for="withdrawal in withdrawHistory" :key="withdrawal.id" class="border border-gray-800 rounded-md p-2 text-xs bg-black">
                   <div class="flex justify-between">
                     <span class="text-white font-medium">{{ withdrawal.symbol.toUpperCase() }}</span>
                     <span :class="{
@@ -777,7 +756,7 @@ const performExchange = async () => {
                   </div>
                   <div class="flex justify-between mt-1">
                     <span class="text-gray-400">Amount</span>
-                    <span class="text-white">{{ withdrawal.amount }} {{ withdrawal.symbol.toUpperCase() }}</span>
+                    <span class="text-white">{{ formatAmount(withdrawal.amount, withdrawal.symbol) }} {{ withdrawal.symbol.toUpperCase() }}</span>
                   </div>
                   <div class="flex justify-between mt-1">
                     <span class="text-gray-400">Address</span>
@@ -922,7 +901,7 @@ const performExchange = async () => {
             </div>
             <div class="flex justify-between mt-1">
               <span class="text-gray-400">Amount</span>
-              <span class="text-white">{{ deposit.amount }} {{ deposit.symbol.toUpperCase() }}</span>
+              <span class="text-white">{{ formatAmount(deposit.amount, deposit.symbol) }} {{ deposit.symbol.toUpperCase() }}</span>
             </div>
             <div class="flex justify-between mt-1">
               <span class="text-gray-400">Date</span>

@@ -6,6 +6,14 @@ import { ChartBarIcon, ClipboardIcon } from '@heroicons/vue/24/solid';
 import { useCryptoStore } from '@/Store/crypto';
 import { formatBalance } from '@/utils/formatBalance';
 
+// Function to format amounts with proper decimals
+const formatAmount = (amount, symbol) => {
+  const crypto = props.coinTypes.find(c => c.symbol === symbol.toLowerCase());
+  if (!crypto) return amount;
+  const parsed = parseFloat(amount);
+  return isNaN(parsed) ? amount : parsed.toFixed(crypto.symbol === 'usdt' ? 2 : (crypto.symbol === 'btc' ? 8 : 4));
+};
+
 const page = usePage();
 
 const props = defineProps({
@@ -114,7 +122,7 @@ const setupEchoListeners = () => {
     });
 };
 
-// Submit withdrawal form using fetch (like DepositDetails.vue)
+// Submit withdrawal form using Inertia router (better for CSRF handling)
 const submitWithdrawal = async () => {
   // Get the form element
   const form = document.querySelector('form');
@@ -133,7 +141,7 @@ const submitWithdrawal = async () => {
   }
 
   if (amount > availableBalance) {
-    serverMessage.value = `Insufficient balance. Available: ${formatBalance(availableBalance, activeTab.value === 'crypto' ? (selectedCoin.value?.symbol === 'usdt' ? 2 : (selectedCoin.value?.symbol === 'btc' ? 8 : 4)) : 2)} ${activeTab.value === 'crypto' ? selectedCoin.value?.symbol.toUpperCase() : 'USDT'}`;
+    serverMessage.value = `Insufficient balance. Available: ${formatAmount(availableBalance, activeTab.value === 'crypto' ? selectedCoin.value.symbol : 'usdt')} ${activeTab.value === 'crypto' ? selectedCoin.value.symbol.toUpperCase() : 'USDT'}`;
     messageType.value = 'error';
     setTimeout(() => {
       serverMessage.value = '';
@@ -152,29 +160,17 @@ const submitWithdrawal = async () => {
     return;
   }
 
-  // Create FormData from the form
-  const formDataNew = new FormData(form);
-
-  // Add CSRF token
-  const csrfToken = document.querySelector('meta[name="csrf-token"]');
-  if (csrfToken) {
-    formDataNew.append('_token', csrfToken.getAttribute('content'));
+  // Create data object for Inertia
+  const data = {};
+  for (let [key, value] of formData.entries()) {
+    data[key] = value;
   }
 
-  try {
-    const response = await fetch(route('withdraw.store'), {
-      method: 'POST',
-      body: formDataNew,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': csrfToken ? csrfToken.getAttribute('content') : '',
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok && (data.success === true || data.success === undefined || data.success === null || (data.message && !data.errors))) {
+  // Use Inertia router for better CSRF handling
+  router.post(route('withdraw.store'), data, {
+    preserveState: true,
+    preserveScroll: true,
+    onSuccess: (page) => {
       // Success - show server message
       const serverMessageText = 'Withdrawal request submitted successfully';
       
@@ -203,30 +199,14 @@ const submitWithdrawal = async () => {
           usdt_balance: currentAmount - amount,
         };
       }
-    } else {
-      // Handle validation errors or server errors
+    },
+    onError: (errors) => {
+      // Handle validation errors
       let errorMessage = 'An error occurred while processing your withdrawal request.';
       
-      if (data.errors) {
-        const errorMessages = Object.values(data.errors).flat();
+      if (errors) {
+        const errorMessages = Object.values(errors).flat();
         errorMessage = errorMessages[0];
-      } else if (data.message) {
-        errorMessage = data.message;
-      } else if (data.error) {
-        errorMessage = data.error;
-      } else if (!response.ok) {
-        // Handle HTTP error status codes
-        if (response.status === 422) {
-          errorMessage = 'Validation failed. Please check your input.';
-        } else if (response.status === 400) {
-          errorMessage = 'Bad request. Please try again.';
-        } else if (response.status === 401) {
-          errorMessage = 'Unauthorized. Please log in again.';
-        } else if (response.status === 403) {
-          errorMessage = 'Insufficient permissions.';
-        } else if (response.status === 500) {
-          errorMessage = 'Server error. Please try again later.';
-        }
       }
       
       // Display error message in UI
@@ -238,20 +218,8 @@ const submitWithdrawal = async () => {
         serverMessage.value = '';
         messageType.value = '';
       }, 5000);
-    }
-  } catch (error) {
-    console.error('Network error:', error);
-    
-    // Display network error in UI instead of alert
-    serverMessage.value = 'Network error. Please try again later.';
-    messageType.value = 'error';
-    
-    // Clear error message after 5 seconds
-    setTimeout(() => {
-      serverMessage.value = '';
-      messageType.value = '';
-    }, 5000);
-  }
+    },
+  });
 };
 
 // Set maximum amount for selected cryptocurrency or USDT for bank
@@ -263,7 +231,7 @@ const setMaxAmount = () => {
     if (form) {
       const amountInput = form.querySelector('input[name="amount_withdraw"]');
       if (amountInput) {
-        amountInput.value = maxAmount.toString();
+        amountInput.value = formatAmount(maxAmount, selectedCoin.value.symbol);
       }
     }
   } else if (activeTab.value === 'bank') {
@@ -273,7 +241,7 @@ const setMaxAmount = () => {
     if (form) {
       const amountInput = form.querySelector('input[name="bank_withdraw_amount"]');
       if (amountInput) {
-        amountInput.value = maxAmount.toString();
+        amountInput.value = formatAmount(maxAmount, 'usdt');
       }
     }
   }
@@ -520,7 +488,7 @@ onUnmounted(() => {
               <div class="flex justify-between items-center bg-gray-800 rounded-md lg:rounded-lg p-1.5 lg:p-4">
                 <div class="flex items-center space-x-1.5 lg:space-x-2">
                   <img v-if="selectedCoin && cryptoStore.getIcon(selectedCoin.symbol)" :src="cryptoStore.getIcon(selectedCoin.symbol)" :alt="selectedCoin.symbol.toUpperCase()" class="w-3.5 h-3.5 lg:w-6 lg:h-6 rounded-full" />
-                  <span class="text-xs lg:text-base text-gray-300">Available: {{ selectedCoinBalance ? formatBalance(selectedCoinBalance, selectedCoin.symbol === 'usdt' ? 2 : (selectedCoin.symbol === 'btc' ? 8 : 4)) : '0.00' }} {{ selectedCoin ? selectedCoin.symbol.toUpperCase() : 'CRYPTO' }}</span>
+                  <span class="text-xs lg:text-base text-gray-300">Available: {{ selectedCoinBalance ? formatAmount(selectedCoinBalance, selectedCoin.symbol) : '0.00' }} {{ selectedCoin ? selectedCoin.symbol.toUpperCase() : 'CRYPTO' }}</span>
                 </div>
                 <button
                   @click="setMaxAmount"
@@ -649,7 +617,7 @@ onUnmounted(() => {
               <div class="flex justify-between items-center bg-gray-800 rounded-md lg:rounded-lg p-1 lg:p-2">
                 <div class="flex items-center space-x-1.5 lg:space-x-2">
                   <img v-if="cryptoStore.getIcon('usdt')" :src="cryptoStore.getIcon('usdt')" alt="USDT" class="w-3.5 h-3.5 lg:w-6 lg:h-6 rounded-full" />
-                  <span class="text-xs lg:text-base text-gray-300">Available: {{ liveBalances.usdt_balance ? formatBalance(liveBalances.usdt_balance, 2) : '0.00' }} USDT</span>
+                  <span class="text-xs lg:text-base text-gray-300">Available: {{ liveBalances.usdt_balance ? formatAmount(liveBalances.usdt_balance, 'usdt') : '0.00' }} USDT</span>
                 </div>
                 <button
                   @click="setMaxAmount"
@@ -678,119 +646,121 @@ onUnmounted(() => {
         </div>
 
         <!-- History Display -->
-        <div v-if="activeTab === 'history'" class="space-y-1 lg:space-y-2 h-[calc(100vh-130px)] lg:h-[calc(100vh-150px)] history-section history-container">
-          <div class="text-center mb-1 lg:mb-2">
-            <h2 class="text-sm lg:text-xl font-bold text-white mb-0.5 lg:mb-1">Withdrawal History</h2>
-            <p class="text-gray-400 text-xs">Track all your withdrawal requests</p>
-          </div>
-
-          <!-- History Server Response Message -->
-          <div v-if="serverMessage && activeTab === 'history'" class="mb-1 lg:mb-2">
-            <div
-              :class="[
-                'text-center py-1 px-2 lg:py-2 lg:px-4 rounded-md font-medium text-xs',
-                messageType === 'success'
-                  ? 'bg-green-900 text-green-200 border border-green-800'
-                  : 'bg-red-900 text-red-200 border border-red-800'
-              ]"
-            >
-              {{ serverMessage }}
+        <div v-if="activeTab === 'history'" class="bg-black history-section">
+          <div class="p-2 lg:p-4">
+            <div class="text-center mb-2 lg:mb-4">
+              <h2 class="text-sm lg:text-xl font-bold text-white mb-0.5 lg:mb-1">Withdrawal History</h2>
+              <p class="text-gray-400 text-xs">Track all your withdrawal requests</p>
             </div>
-          </div>
 
-          <div v-if="withdrawalsData.length === 0" class="text-center py-4 lg:py-8">
-            <div class="bg-black rounded-lg p-3 lg:p-6 border border-gray-800">
-              <svg class="w-6 h-6 lg:w-12 lg:h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-              <h3 class="text-sm font-semibold text-gray-300 mb-1">No withdrawal history</h3>
-              <p class="text-gray-500 text-xs">Your withdrawal requests will appear here</p>
-            </div>
-          </div>
-
-          <div v-else class="space-y-1 lg:space-y-2">
-            <div
-              v-for="withdrawal in withdrawalsData"
-              :key="withdrawal.id"
-              class="bg-black rounded-md p-2 lg:p-3 border border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 history-card"
-            >
-              <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-1 lg:mb-2">
-                <div class="flex items-center space-x-1 lg:space-x-2 mb-1 lg:mb-0">
-                  <div :class="[
-                    'flex-shrink-0 w-4 h-4 lg:w-8 lg:h-8 rounded-full flex items-center justify-center',
-                    withdrawal.coin_id ? 'bg-blue-900' : 'bg-purple-900'
-                  ]">
-                    <svg v-if="withdrawal.coin_id" class="w-2 h-2 lg:w-4 lg:h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                    </svg>
-                    <svg v-else class="w-2 h-2 lg:w-4 lg:h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="text-xs lg:text-sm font-bold text-white">{{ withdrawal.coin_id ? 'Crypto' : 'Bank' }} Withdrawal</h3>
-                    <p class="text-xs text-gray-400">{{ new Date(withdrawal.created_at).toLocaleDateString() }}</p>
-                  </div>
-                </div>
-
-                <div :class="[
-                  'inline-flex items-center px-1 lg:px-2 py-0.5 rounded-full text-xs font-semibold self-start lg:self-auto',
-                  withdrawal.status === 'pending' || withdrawal.status === 'Under Review' ? 'bg-yellow-900 text-yellow-200 border border-yellow-800' :
-                  withdrawal.status === 'approved' ? 'bg-green-900 text-green-200 border border-green-800' :
-                  'bg-red-900 text-red-200 border border-red-800'
-                ]">
-                  <div :class="[
-                    'w-1 h-1 rounded-full mr-1',
-                    withdrawal.status === 'pending' || withdrawal.status === 'Under Review' ? 'bg-yellow-500' :
-                    withdrawal.status === 'approved' ? 'bg-green-500' :
-                    'bg-red-500'
-                  ]"></div>
-                  {{ withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1) }}
-                </div>
+            <!-- History Server Response Message -->
+            <div v-if="serverMessage && activeTab === 'history'" class="mb-2 lg:mb-4">
+              <div
+                :class="[
+                  'text-center py-1 px-2 lg:py-2 lg:px-4 rounded-md font-medium text-xs',
+                  messageType === 'success'
+                    ? 'bg-green-900 text-green-200 border border-green-800'
+                    : 'bg-red-900 text-red-200 border border-red-800'
+                ]"
+              >
+                {{ serverMessage }}
               </div>
+            </div>
 
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-1 lg:gap-3">
-                <div class="space-y-1">
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-medium text-gray-400">Amount:</span>
-                    <span class="text-xs font-bold text-white">{{ withdrawal.amount_withdraw }}</span>
+            <div v-if="withdrawalsData.length === 0" class="text-center py-8 lg:py-16">
+              <div class="bg-gray-800 rounded-lg p-4 lg:p-6 border border-gray-700">
+                <svg class="w-8 h-8 lg:w-12 lg:h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3 class="text-sm font-semibold text-gray-300 mb-1">No withdrawal history</h3>
+                <p class="text-gray-500 text-xs">Your withdrawal requests will appear here</p>
+              </div>
+            </div>
+
+            <div v-else class="space-y-2 lg:space-y-3">
+              <div
+                v-for="withdrawal in withdrawalsData"
+                :key="withdrawal.id"
+                class="bg-gray-800 rounded-md p-3 lg:p-4 border border-gray-700 shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-1 lg:mb-2">
+                  <div class="flex items-center space-x-1 lg:space-x-2 mb-1 lg:mb-0">
+                    <div :class="[
+                      'flex-shrink-0 w-4 h-4 lg:w-8 lg:h-8 rounded-full flex items-center justify-center',
+                      withdrawal.coin_id ? 'bg-blue-900' : 'bg-purple-900'
+                    ]">
+                      <svg v-if="withdrawal.coin_id" class="w-2 h-2 lg:w-4 lg:h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                      </svg>
+                      <svg v-else class="w-2 h-2 lg:w-4 lg:h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="text-xs lg:text-sm font-bold text-white">{{ withdrawal.coin_id ? 'Crypto' : 'Bank' }} Withdrawal</h3>
+                      <p class="text-xs text-gray-400">{{ new Date(withdrawal.created_at).toLocaleDateString() }}</p>
+                    </div>
                   </div>
 
-                  <div v-if="withdrawal.coin_id" class="space-y-1">
-                    <div class="flex justify-between items-center">
-                      <span class="text-xs font-medium text-gray-400">Wallet:</span>
-                      <span class="text-xs text-white font-mono truncate">{{ withdrawal.crypto_wallet }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span class="text-xs font-medium text-gray-400">Crypto:</span>
-                      <span class="text-xs text-white">{{ withdrawal.coin_type?.coin_name }} ({{ withdrawal.coin_type?.symbol.toUpperCase() }})</span>
-                    </div>
-                  </div>
-
-                  <div v-else class="space-y-1">
-                    <div class="flex justify-between items-center">
-                      <span class="text-xs font-medium text-gray-400">Holder:</span>
-                      <span class="text-xs text-white truncate">{{ withdrawal.account_holder_name }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span class="text-xs font-medium text-gray-400">Bank:</span>
-                      <span class="text-xs text-white truncate">{{ withdrawal.bank_name }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                      <span class="text-xs font-medium text-gray-400">Account:</span>
-                      <span class="text-xs text-white font-mono">{{ withdrawal.bank_account_number }}</span>
-                    </div>
+                  <div :class="[
+                    'inline-flex items-center px-1 lg:px-2 py-0.5 rounded-full text-xs font-semibold self-start lg:self-auto',
+                    withdrawal.status === 'pending' || withdrawal.status === 'Under Review' ? 'bg-yellow-900 text-yellow-200 border border-yellow-800' :
+                    withdrawal.status === 'approved' ? 'bg-green-900 text-green-200 border border-green-800' :
+                    'bg-red-900 text-red-200 border border-red-800'
+                  ]">
+                    <div :class="[
+                      'w-1 h-1 rounded-full mr-1',
+                      withdrawal.status === 'pending' || withdrawal.status === 'Under Review' ? 'bg-yellow-500' :
+                      withdrawal.status === 'approved' ? 'bg-green-500' :
+                      'bg-red-500'
+                    ]"></div>
+                    {{ withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1) }}
                   </div>
                 </div>
 
-                <div class="flex items-end justify-end">
-                  <button
-                    @click="copyHistoryToClipboard"
-                    class="inline-flex items-center space-x-1 px-2 py-1.5 lg:px-3 lg:py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-all duration-300 text-xs font-medium border border-gray-600"
-                  >
-                    <ClipboardIcon class="h-3 w-3 lg:h-4 lg:w-4" />
-                    <span>Copy All</span>
-                  </button>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-1 lg:gap-3">
+                  <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                      <span class="text-xs font-medium text-gray-400">Amount:</span>
+                      <span class="text-xs font-bold text-white">{{ formatAmount(withdrawal.amount_withdraw, withdrawal.coin_type?.symbol || 'usdt') }}</span>
+                    </div>
+
+                    <div v-if="withdrawal.coin_id" class="space-y-1">
+                      <div class="flex justify-between items-center">
+                        <span class="text-xs font-medium text-gray-400">Wallet:</span>
+                        <span class="text-xs text-white font-mono truncate">{{ withdrawal.crypto_wallet }}</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-xs font-medium text-gray-400">Crypto:</span>
+                        <span class="text-xs text-white">{{ withdrawal.coin_type?.coin_name }} ({{ withdrawal.coin_type?.symbol.toUpperCase() }})</span>
+                      </div>
+                    </div>
+
+                    <div v-else class="space-y-1">
+                      <div class="flex justify-between items-center">
+                        <span class="text-xs font-medium text-gray-400">Holder:</span>
+                        <span class="text-xs text-white truncate">{{ withdrawal.account_holder_name }}</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-xs font-medium text-gray-400">Bank:</span>
+                        <span class="text-xs text-white truncate">{{ withdrawal.bank_name }}</span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-xs font-medium text-gray-400">Account:</span>
+                        <span class="text-xs text-white font-mono">{{ withdrawal.bank_account_number }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-end justify-end">
+                    <button
+                      @click="copyHistoryToClipboard"
+                      class="inline-flex items-center space-x-1 px-2 py-1.5 lg:px-3 lg:py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-all duration-300 text-xs font-medium border border-gray-600"
+                    >
+                      <ClipboardIcon class="h-3 w-3 lg:h-4 lg:w-4" />
+                      <span>Copy All</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1022,43 +992,40 @@ button:disabled {
   background-color: #181A20 !important;
 }
 
-/* Compact history cards */
-.history-card {
+/* Ensure no white background appears anywhere in history */
+.history-section,
+.history-section *,
+.history-section .space-y-2 > * + *,
+.history-section .space-y-3 > * + * {
   background-color: #181A20 !important;
-  border: 1px solid #374151;
-  margin-bottom: 0.25rem;
-}
-
-.history-card:hover {
-  background-color: #1f2937 !important;
-}
-
-/* Ensure no white background appears */
-.history-container {
-  background-color: #181A20 !important;
-}
-
-.history-container * {
-  background-color: transparent;
 }
 
 /* Force black background for all history elements */
-.history-section,
-.history-section *,
-.history-card,
-.history-card * {
-  background-color: #181A20 !important;
-}
-
-.history-card .bg-gray-800 {
+.history-section .bg-gray-800 {
   background-color: #1f2937 !important;
 }
 
-.history-card .bg-gray-700 {
+.history-section .bg-gray-700 {
   background-color: #374151 !important;
 }
 
-.history-card .bg-gray-600 {
+.history-section .bg-gray-600 {
   background-color: #4b5563 !important;
+}
+
+/* Ensure the scrollable area has consistent background */
+.history-section.overflow-y-auto {
+  background-color: #181A20 !important;
+}
+
+/* Remove any default spacing that might cause white gaps */
+.history-section .space-y-2 > * + * {
+  margin-top: 0.5rem !important;
+  background-color: #181A20 !important;
+}
+
+.history-section .space-y-3 > * + * {
+  margin-top: 0.75rem !important;
+  background-color: #181A20 !important;
 }
 </style>

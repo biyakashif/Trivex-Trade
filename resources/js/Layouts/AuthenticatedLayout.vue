@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 
@@ -34,12 +34,42 @@ const isFullScreenPage = computed(() => ['Vendor/TradeView', 'Vendor/DepositDeta
 
 // Function to send last activity to backend silently
 const sendLastActivity = () => {
+    // Check if user is still authenticated before sending request
+    const user = props.auth?.user;
+    if (!user || !user.id) {
+        // User is not authenticated, stop the activity tracking
+        if (activityInterval) {
+            clearInterval(activityInterval);
+            activityInterval = null;
+        }
+        return;
+    }
+
     axios.post('/update-last-activity')
-        .then(() => {
-            console.log('Last activity updated');
+        .then((response) => {
+            // Only log success if we actually got a successful response
+            if (response.status === 200) {
+                console.log('Last activity updated');
+            }
         })
         .catch((error) => {
-            console.error('Failed to update last activity:', error);
+            // If we get 401 or 419 (CSRF token expired), user is logged out, stop tracking
+            if (error.response?.status === 401 || error.response?.status === 419) {
+                if (activityInterval) {
+                    clearInterval(activityInterval);
+                    activityInterval = null;
+                }
+                // Force a page reload to clear any cached state
+                window.location.reload();
+            }
+            // For other errors, also stop tracking to prevent infinite retries
+            else if (error.response?.status >= 400) {
+                if (activityInterval) {
+                    clearInterval(activityInterval);
+                    activityInterval = null;
+                }
+            }
+            // Silent error handling - no console error for other errors
         });
 };
 
@@ -53,6 +83,23 @@ onMounted(() => {
         activityInterval = setInterval(sendLastActivity, 60000);
     }
 });
+
+// Watch for authentication state changes
+watch(() => props.auth?.user, (newUser, oldUser) => {
+    // If user was logged in but now is not (logout scenario)
+    if (oldUser && oldUser.id && (!newUser || !newUser.id)) {
+        if (activityInterval) {
+            clearInterval(activityInterval);
+            activityInterval = null;
+        }
+    }
+    // If user was not logged in but now is (login scenario)
+    else if (!oldUser && newUser && newUser.id) {
+        // Start activity tracking
+        sendLastActivity();
+        activityInterval = setInterval(sendLastActivity, 60000);
+    }
+}, { immediate: false });
 
 onUnmounted(() => {
     if (activityInterval) {
